@@ -1,0 +1,29 @@
+Package: dockless
+Title: Spatio-Temporal Forecasts for Bike Availability in Dockless Bike Sharing Systems
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Lucas",
+           family = "Van der Meer",
+           role = c("aut", "cre"),
+           email = "l_vand09@uni-muenster.de")
+Description: Functions for my master thesis in Geospatial Technologies.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    forecast,
+    sf,
+    RPostgreSQL,
+    ClustGeo,
+    tsibble,
+    lubridate,
+    stats,
+    grDevices,
+    methods,
+    graphics
+Suggests: 
+    ggplot2,
+    dendextend,
+    lomb,
+    tsibblestats
+RoxygenNote: 6.1.1
