@@ -32,6 +32,7 @@ query_distances = function(locations,
 
   # Convert to POSIXlt
   from = as.POSIXlt(from)
+  to = as.POSIXlt(to)
 
   # Connect to the database
   db_connection = RPostgreSQL::dbConnect(
