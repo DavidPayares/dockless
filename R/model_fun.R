@@ -230,7 +230,8 @@ test_seasonality = function(data, seasons, window = 2) {
 #' @param data object of class \code{dockless_dfc}.
 #' @param weeks_of_data how many weeks of historical data to use for model building.
 #' @param last_day character specifying the last day of the model building period.
-#' Should be in the format 'YYYY-mm-dd'.
+#' Should be in the format 'YYYY-mm-dd'. If set to NULL, the last day of the data
+#' is used.
 #' @param auto_seasonality logical. If \code{TRUE}, the seasonal period of each
 #' time series will be automatically determined with time series cross-validation.
 #' @param seasons if \code{auto_seasonality} is set to \code{TRUE}: a list of
