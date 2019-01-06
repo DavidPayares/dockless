@@ -1,3 +1,96 @@
+#' Forecast one day ahead
+#'
+#' For a given location and a given time, forecast all the future timestamps
+#' - i.e. every 15min - until one day ahead. Database credentials are needed
+#' for this function.
+#'
+#' @param location object of class \code{sf}, \code{sfc} or \code{sfg}, with
+#' point geometry.
+#' @param time timestamp of class \code{POSIXct}.
+#' @param clusters list of objects of class \code{sf}, \code{sfc} or \code{sfg},
+#' with polygon geometry, each representing the geographical outline of a cluster.
+#' @param models list of objects of either class \code{ARIMA} or class \code{stlm},
+#' each representing the forecasting model belonging to the corresponding cluster.
+#' @param naive logical; if set to TRUE, only naive forecasts are made and the
+#' parameters \code{clusters} and \code{models} are ignored.
+#' @param weeks_of_data how many weeks of historical data to use for forecasting.
+#' @param database_user character defining the user name to access the database.
+#' @param database_password character defining the password to access the database.
+#' @return Returns an object of class \code{forecast}, coming from the
+#' \code{forecast} package.
+#' @export
+forecast_day = function(location, time, clusters = NULL, models = NULL,
+                        naive = FALSE, weeks_of_data = 8,
+                        database_user, database_password) {
+
+  # Set time in correct timezone
+  attr(from, 'tzone') = 'America/Los_Angeles'
+
+  # Define the time from which data needs to be queried as the given time..
+  # ..minus the given weeks of data
+  from_time = time - (60 * 60 * 24 * 7 * weeks_of_data)
+
+  # Query data for the given location, from the calculated 'from_time'
+  # Data will come as class dockless_dfc
+  data_list = query_distances(
+    locations = location,
+    from = from_time,
+    database_user = database_user,
+    database_password = database_password
+  )
+
+  # Retrieve the dockless_df from the dockless_dfc
+  data = data_list[[1]]
+
+  # If naive is TRUE, forecast the data with naive forecasts
+  # If naive is FALSE, forecast the data with one of the given models
+  if (naive) {
+    # Convert data to ts object
+    data_ts = stats::ts(data$distance)
+
+    # Forecast with naive method
+    forecast = forecast::naive(data_ts, h = 96)
+  } else {
+    # Choose model based on the cluster in which the location is located
+    f = function(x) {
+      sf::st_within(x, location, sparse = FALSE)
+    }
+    cluster_index = which(sapply(clusters, f))
+    model = models[[cluster_index]]
+
+    # Fit the model to the queried data
+    if (methods::is(model, 'ARIMA')) {
+      # Convert data to ts object
+      data_ts = stats::ts(data$distance)
+
+      # Fit the ARIMA model from the model object
+      data_model = forecast::Arima(data_ts, model = model)
+
+    } else if (methods::is(model, 'stlm')) {
+      # Convert to msts object
+      data_msts = forecast::msts(
+        data$distance,
+        seasonal.periods = attr(model$stl, 'seasonal.periods')
+      )
+
+      # Decompose with STL and fit the ARIMA model from the model object..
+      # ..to trend+remainder
+      data_model = forecast::stlm(data_msts, robust = TRUE, model = model)
+
+    } else {
+      # Stop the function
+      stop("The models must be either of class 'ARIMA' or class 'stlm'")
+    }
+
+    # Forecast
+    forecast = forecast::forecast(data_model, h = 96)
+  }
+
+  return(forecast)
+
+}
+
+
 #' Forecast last day of a \code{dockless_df} object
 #'
 #' Forecasts the last day of a \code{dockless_df} time series, using a model
