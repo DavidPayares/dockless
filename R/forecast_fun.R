@@ -168,8 +168,8 @@ forecast_testset = function(intensity_data, first_day, n_weeks = 2, n_sample = 5
       }
 
     # Run forecast_testset_onepoint function for all points in the sample
-    f = function(x, y) forecast_testset_onepoint(location = x, time = y)
-    mapply(f, sample$location, sample$time)
+    g = function(x, y) forecast_testset_onepoint(location = x, time = y)
+    mapply(g, sample$location, sample$time)
 
   }
 
