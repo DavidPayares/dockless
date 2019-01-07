@@ -18,7 +18,6 @@
 #' @param database_password character defining the password to access the database.
 #' @return Returns an object of class \code{forecast}, coming from the
 #' \code{forecast} package.
-#' @export
 forecast_day = function(location, time, clusters = NULL, models = NULL,
                         naive = FALSE, weeks_of_data = 8,
                         database_user, database_password) {
@@ -104,7 +103,6 @@ forecast_day = function(location, time, clusters = NULL, models = NULL,
 #' @return Returns an object of class \code{dockless_fc_df}, which is a data
 #' frame containing the observed values, forecasted values and corresponding
 #' prediction intervals.
-#' @export
 forecast_lastday = function(data, model, weeks_of_data = NULL) {
 
   # Filter data when weeks_of_data is specified
@@ -191,7 +189,6 @@ forecast_lastday = function(data, model, weeks_of_data = NULL) {
 #' class \code{dockless_fc_df}, which is a data frame containing the observed
 #' values, forecasted values and corresponding prediction intervals of a one-day
 #' forecast for one single time series.
-#' @export
 forecast_lastweek = function(data, model, weeks_of_data = NULL) {
 
   # Time lags for each day
@@ -238,7 +235,6 @@ forecast_lastweek = function(data, model, weeks_of_data = NULL) {
 #' is an object of class \code{dockless_fc_df}, which is a data frame containing
 #' the observed values, forecasted values and corresponding prediction intervals
 #' of a one-day forecast for one single time series.
-#' @export
 forecast_period = function(data, clusters, models, length,
                            last_day, weeks_of_data = 8) {
 
