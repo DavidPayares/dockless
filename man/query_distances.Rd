@@ -6,14 +6,17 @@
 \usage{
 query_distances(locations, from = as.POSIXct("2018-09-10 16:30:00",
   format = "\%Y-\%m-\%d \%H:\%M:\%S", tz = "America/Los_Angeles"),
-  database_user, database_password)
+  to = Sys.time(), database_user, database_password)
 }
 \arguments{
 \item{locations}{object of class \code{sf} with point geometry.}
 
-\item{from}{timestamp of class \code{POSIXct} defining from which timestamp 
-on historical data should be queried. Default is set to the first timestamp 
+\item{from}{timestamp of class \code{POSIXct} defining from which timestamp
+on historical data should be queried. Default is set to the first timestamp
 in the database (i.e. earlier timestamps than the default are not possible).}
+
+\item{to}{timestamp of class \code{POSIXct} defining until which timestamp
+historical data should be queried. Default is set to the system time.}
 
 \item{database_user}{character defining the user name to access the database.}
 
@@ -21,11 +24,11 @@ in the database (i.e. earlier timestamps than the default are not possible).}
 }
 \value{
 Returns an object of class \code{dockless_dfc}, which is a collection
-of data frames of class \code{dockless_df}. Each \code{dockless_df} object is 
+of data frames of class \code{dockless_df}. Each \code{dockless_df} object is
 a time serie of historical distance data for a specific geographical location.
 }
 \description{
-Queries, for each of the given geographical locations, distances to the 
-nearest available bike for several timestamps in the past, from the JUMP Bikes 
+Queries, for each of the given geographical locations, distances to the
+nearest available bike for several timestamps in the past, from the JUMP Bikes
 database. Database credentials are needed for this function.
 }

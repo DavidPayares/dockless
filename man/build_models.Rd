@@ -14,7 +14,8 @@ build_models(data, weeks_of_data = 12, last_day = NULL,
 \item{weeks_of_data}{how many weeks of historical data to use for model building.}
 
 \item{last_day}{character specifying the last day of the model building period.
-Should be in the format 'YYYY-mm-dd'.}
+Should be in the format 'YYYY-mm-dd'. If set to NULL, the last day of the data
+is used.}
 
 \item{auto_seasonality}{logical. If \code{TRUE}, the seasonal period of each
 time series will be automatically determined with time series cross-validation.}

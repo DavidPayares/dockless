@@ -19,8 +19,8 @@ update_distances(locations, data, database_user, database_password)
 Returns the updated object of class \code{dockless_dfc}.
 }
 \description{
-Queries, for each of the given geographical locations, distances to the 
-nearest available bike for several timestamps in the past, from the JUMP Bikes 
+Queries, for each of the given geographical locations, distances to the
+nearest available bike for several timestamps in the past, from the JUMP Bikes
 database. Queries only data after the last timestamp of the provided
 \code{dockless_dfc} object. Database credentials are needed for this function.
 }

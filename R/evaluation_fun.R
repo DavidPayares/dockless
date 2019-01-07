@@ -71,7 +71,7 @@ mae_points = function(x) {
 }
 
 
-#' Mean absolute error per time of the week
+#' Mean absolute error per time of the day
 #'
 #' Calculates the mean absolute error of each timestamp in a
 #' \code{dockless_fc_dfc} object.

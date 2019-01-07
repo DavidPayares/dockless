@@ -16,6 +16,6 @@ Returns an object of class \code{sf}, containing all pick-ups and
 drop-offs, with geographical location and timestamp.
 }
 \description{
-Queries individual pick-ups and drop-offs from the complete JUMP Bikes 
+Queries individual pick-ups and drop-offs from the complete JUMP Bikes
 database. Database credentials are needed for this function.
 }
