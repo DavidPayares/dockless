@@ -4,20 +4,12 @@
 \alias{forecast_testset}
 \title{Forecast a test set}
 \usage{
-forecast_testset(intensity_data, first_day, n_weeks = 2,
-  n_sample = 500, clusters = NULL, models = NULL, naive = FALSE,
+forecast_testset(data, clusters = NULL, models = NULL, naive = FALSE,
   weeks_of_data = 8, database_user, database_password)
 }
 \arguments{
-\item{intensity_data}{object of class \code{sf}, containing the locations and times
-of all pick-ups in the bike sharing system.}
-
-\item{first_day}{character specifying the first day of the test set period.
-Should be in the format 'YYYY-mm-dd'.}
-
-\item{n_weeks}{the length in weeks of the test set period.}
-
-\item{n_sample}{the size of the sample for each week.}
+\item{data}{object of class \code{sf} with point geometry, containing the
+locations and times of the points in a test set.}
 
 \item{clusters}{list of objects of class \code{sf}, \code{sfc} or \code{sfg},
 with polygon geometry, each representing the geographical outline of a cluster.}
