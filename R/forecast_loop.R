@@ -127,10 +127,9 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
       # Forecast with naive method
       forecast = forecast::naive(fc_data_ts, h = 96)
     } else {
-
       # Choose model based on the cluster in which the location is located
       f = function(x) {
-        sf::st_within(location, x, sparse = FALSE)
+        sf::st_intersects(location, x, sparse = FALSE)
       }
       cluster_index = which(sapply(clusters, f))
       model = models[[cluster_index]]
