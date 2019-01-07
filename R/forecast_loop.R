@@ -5,15 +5,18 @@
 #' historical data from the bike sharing system. The days of the week from those
 #' combinations are translated into the same days of the week in the test set period.
 #'
-#' @param intensity_data object of class \code{sf}, containing the locations and times
-#' of all pick-ups in the bike sharing system.
+#' @param intensity_data object of class \code{sf} with point geometry, containing the
+#' locations and times of all pick-ups in the bike sharing system.
+#' @param area object of class \code{sf}, with polygon geometry, representing the
+#' service area of the bike sharing system.
 #' @param first_day character specifying the first day of the test set period.
 #' Should be in the format 'YYYY-mm-dd'.
 #' @param n_weeks the length in weeks of the test set period.
 #' @param n_sample the size of the sample for each week.
 #' @return Returns an object of class \code{sf}, with point geometry
 #' @export
-create_testset = function(intensity_data, first_day, n_weeks = 2, n_sample = 500) {
+create_testset = function(intensity_data, area, first_day,
+                          n_weeks = 2, n_sample = 500) {
 
   # Convert 'first_day' to a date
   first_day = as.Date(first_day, format = '%Y-%m-%d')
@@ -22,12 +25,21 @@ create_testset = function(intensity_data, first_day, n_weeks = 2, n_sample = 500
   f = function(x) first_day + (x - 1) * 7
   week_firstdays = do.call('c', lapply(seq(1, n_weeks, 1), f))
 
+  # Clip the intensity data with the service area
+  data_projected = project_sf(intensity_data)
+  area_projected = project_sf(area)
+  data_projected$intersects = as.vector(
+    sf::st_intersects(data_projected, area_projected, sparse = FALSE)
+  )
+  data_clipped = data_projected[data_projected$intersects,]
+  data_clipped$intersects = NULL
+
   # Sample one week
   sample_oneweek = function(first_day) {
 
     # Sample n (location, time)-combinations from the intensity data
-    sample_indices = sample(x = c(1:nrow(intensity_data)), size = n_sample)
-    sample = intensity_data[sample_indices, ]
+    sample_indices = sample(x = c(1:nrow(data_clipped)), size = n_sample)
+    sample = data_clipped[sample_indices, ]
 
     # Replace the timestamps in the sample such that the time stays the same but..
     # ..the days are replaced by the same day of the week in the test set week
