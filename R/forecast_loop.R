@@ -219,7 +219,7 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
 
   # Run forecast_testset_onepoint function for all points in the sample
   g = function(x, y) forecast_testset_onepoint(location = x, time = y)
-  all_forecasts = mapply(g, data$location, data$time)
+  all_forecasts = mapply(g, data$location, data$time, SIMPLIFY = FALSE)
 
   # Return as dockless_fcc object
   structure(all_forecasts, class = c("dockless_fcc", "list"))
