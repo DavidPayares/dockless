@@ -108,6 +108,9 @@ query_distances = function(locations,
     }
   )
 
+  # Disconnect to the database
+  RPostgreSQL::dbDisconnect(db_connection)
+
   # When querying for a lot of different locations, the first locations will..
   # ..have less timestamps than later ones. For other functions it is important..
   # ..that all the individual data objects end at the same timestamp. Therefore..
@@ -268,6 +271,9 @@ query_usage = function(database_user, database_password) {
   }
 
   all_data = lapply(bike_id_vec, f)
+
+  # Disconnect to the database
+  RPostgreSQL::dbDisconnect(db_connection)
 
   # Return the row binded data
   do.call(rbind, all_data)
