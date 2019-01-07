@@ -132,6 +132,14 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
     fc_data = data[indices,]
     ev_data = data[-indices,]
 
+    # If from_time is a missing data value, ev_data will miss one or several rows..
+    # ..at the end. In that case, add those missing rows by using the fill_na..
+    # ..function from the tsibble package
+    if (nrow(ev_data) != 96) {
+      ev_data[nrow(ev_data) + 1, ] = list(NA, to_time, NA)
+      ev_data = as.data.frame(tsibble::fill_na(tsibble::as_tsibble(ev_data)))
+    }
+
     # If naive is TRUE, forecast the data with naive forecasts
     # If naive is FALSE, forecast the data with one of the given models
     if (naive) {
@@ -145,8 +153,8 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
     } else {
 
       # Choose model based on the cluster in which the location is located
-      location_projected = project_sf(location)
-      clusters_projected = project_sf(clusters)
+      location_projected = project_sf(sf::st_sfc(location, crs = 4326))
+      clusters_projected = lapply(clusters, function(x) project_sf(x))
 
       f = function(x) {
         sf::st_intersects(location_projected, x, sparse = FALSE)
