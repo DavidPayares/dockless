@@ -29,11 +29,11 @@ create_testset = function(intensity_data, area, first_day,
   data_projected = project_sf(intensity_data)
   area_projected = project_sf(area)
 
-  data_projected$intersects = as.vector(
+  intensity_data$intersects = as.vector(
     sf::st_intersects(data_projected, area_projected, sparse = FALSE)
   )
 
-  data_clipped = data_projected[data_projected$intersects,]
+  data_clipped = intensity_data[intensity_data$intersects,]
   data_clipped$intersects = NULL
 
   # Sample one week
