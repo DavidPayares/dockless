@@ -28,9 +28,11 @@ create_testset = function(intensity_data, area, first_day,
   # Clip the intensity data with the service area
   data_projected = project_sf(intensity_data)
   area_projected = project_sf(area)
+
   data_projected$intersects = as.vector(
     sf::st_intersects(data_projected, area_projected, sparse = FALSE)
   )
+
   data_clipped = data_projected[data_projected$intersects,]
   data_clipped$intersects = NULL
 
@@ -133,21 +135,29 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
     # If naive is TRUE, forecast the data with naive forecasts
     # If naive is FALSE, forecast the data with one of the given models
     if (naive) {
+
       # Convert data to ts object
       fc_data_ts = stats::ts(fc_data$distance)
 
       # Forecast with naive method
       forecast = forecast::naive(fc_data_ts, h = 96)
+
     } else {
+
       # Choose model based on the cluster in which the location is located
+      location_projected = project_sf(location)
+      clusters_projected = project_sf(clusters)
+
       f = function(x) {
-        sf::st_intersects(location, x, sparse = FALSE)
+        sf::st_intersects(location_projected, x, sparse = FALSE)
       }
-      cluster_index = which(sapply(clusters, f))
+
+      cluster_index = which(sapply(clusters_projected, f))
       model = models[[cluster_index]]
 
       # Fit the model to the queried data
       if (methods::is(model, 'ARIMA')) {
+
         # Convert data to ts object
         fc_data_ts = stats::ts(fc_data$distance)
 
@@ -155,6 +165,7 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
         fc_data_model = forecast::Arima(fc_data_ts, model = model)
 
       } else if (methods::is(model, 'stlm')) {
+
         # Convert to msts object
         fc_data_msts = forecast::msts(
           fc_data$distance,
@@ -166,9 +177,12 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
         fc_data_model = forecast::stlm(fc_data_msts, robust = TRUE, model = model)
 
       } else {
+
         # Stop the function
         stop("The models must be either of class 'ARIMA' or class 'stlm'")
+
       }
+
     }
 
     # Forecast
