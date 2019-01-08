@@ -106,7 +106,7 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
 
     # Data is queried only for every quarter of an hour. Therefore, the given time is..
     # ..rounded down to the nearest quartely hour timestamp
-    lubridate::floor_date(time, '15 minutes')
+    time = lubridate::floor_date(time, '15 minutes')
 
     # Define the time from which data needs to be queried as the given time..
     # ..minus the given weeks of data
