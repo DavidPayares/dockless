@@ -66,14 +66,14 @@ query_distances = function(locations,
                                       from$mon + 1, ", ",
                                       from$mday, ", ",
                                       from$hour, ", ",
-                                      from$min + 1, ", ",
+                                      from$min, ", ",
                                       from$sec, ", ",
                                       "'+00')
         AND time <= make_timestamptz(", to$year + 1900, ", ",
                                       to$mon + 1, ", ",
                                       to$mday, ", ",
                                       to$hour, ", ",
-                                      to$min + 1, ", ",
+                                      to$min, ", ",
                                       to$sec, ", ",
                                       "'+00')
       ORDER BY
