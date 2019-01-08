@@ -49,13 +49,13 @@ mae_hourofday.dockless_fc = function(x) {
   x$error = abs(x$error)
 
   # Add a column specifying the hour of the day
-  x$hour = hour(x$time)
+  x$hour = lubridate::hour(x$time)
 
   # Aggregate by hour and calculate mae
-  agg = aggregate(x$error, by = list(x$hour), FUN = mean)
+  agg = stats::aggregate(x$error, by = list(x$hour), FUN = mean)
 
   # Return the mae's as named vector
-  setNames(agg[,2], nm = agg[,1])
+  stats::setNames(agg[,2], nm = agg[,1])
 
 }
 
@@ -90,7 +90,7 @@ mae_lag.dockless_fc = function(x) {
   x$error = abs(x$error)
 
   # Return as named vector
-  setNames(x$error, nm = seq(1, nrow(x), 1))
+  stats::setNames(x$error, nm = seq(1, nrow(x), 1))
 
 }
 
