@@ -129,7 +129,11 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
     # ..at the end. In that case, add those missing rows by using the fill_na..
     # ..function from the tsibble package
     if (nrow(data) != (4 * 24 * 7 * weeks_of_data) + 96) {
-      data[nrow(data) + 1, ] = list(NA, to_time, NA)
+      data[nrow(data) + 1, ] = list(
+        NA,
+        lubridate::round_date(to_time, '15 minutes'),
+        NA
+      )
       data = as.data.frame(tsibble::fill_na(tsibble::as_tsibble(data)))
     }
 
