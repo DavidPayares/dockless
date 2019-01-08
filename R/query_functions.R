@@ -62,20 +62,20 @@ query_distances = function(locations,
         map_sf_gbfs_history
       WHERE
         EXTRACT(MINUTE FROM time) IN ('00', '15', '30', '45')
-        AND time > make_timestamptz(", from$year + 1900, ", ",
-                                      from$mon + 1, ", ",
-                                      from$mday, ", ",
-                                      from$hour, ", ",
-                                      from$min, ", ",
-                                      from$sec, ", ",
-                                      "'+00')
-        AND time <= make_timestamptz(", to$year + 1900, ", ",
-                                      to$mon + 1, ", ",
-                                      to$mday, ", ",
-                                      to$hour, ", ",
-                                      to$min, ", ",
-                                      to$sec, ", ",
-                                      "'+00')
+        AND date_trunc('minute', time) > make_timestamptz(", from$year + 1900, ", ",
+                                                            from$mon + 1, ", ",
+                                                            from$mday, ", ",
+                                                            from$hour, ", ",
+                                                            from$min, ", ",
+                                                            from$sec, ", ",
+                                                            "'+00')
+        AND date_trunc('minute', time) <= make_timestamptz(", to$year + 1900, ", ",
+                                                            to$mon + 1, ", ",
+                                                            to$mday, ", ",
+                                                            to$hour, ", ",
+                                                            to$min, ", ",
+                                                            to$sec, ", ",
+                                                            "'+00')
       ORDER BY
         time,
         location <-> ", sql_point
