@@ -2,18 +2,18 @@
 % Please edit documentation in R/evaluation_functions.R
 \name{mae}
 \alias{mae}
-\alias{mae.dockless_fc_df}
-\alias{mae.dockless_fc_dfc}
+\alias{mae.dockless_fc}
+\alias{mae.dockless_fcc}
 \title{Mean absolute error}
 \usage{
 mae(x)
 
-\method{mae}{dockless_fc_df}(x)
+\method{mae}{dockless_fc}(x)
 
-\method{mae}{dockless_fc_dfc}(x)
+\method{mae}{dockless_fcc}(x)
 }
 \arguments{
-\item{x}{object either of class \code{dockless_fc_df} or \code{dockless_fc_dfc}.}
+\item{x}{object either of class \code{dockless_fc} or \code{dockless_fcc}.}
 }
 \value{
 Returns a numeric value.
