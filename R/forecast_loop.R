@@ -104,6 +104,10 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
   # Function to forecast one (location, time)-combination of the test set
   forecast_testset_onepoint = function(location, time) {
 
+    # Data is queried only for every quarter of an hour. Therefore, the given time is..
+    # ..rounded down to the nearest quartely hour timestamp
+    lubridate::floor_date(time, '15 minutes')
+
     # Define the time from which data needs to be queried as the given time..
     # ..minus the given weeks of data
     from_time = time - (60 * 60 * 24 * 7 * weeks_of_data)
@@ -129,11 +133,7 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
     # ..at the end. In that case, add those missing rows by using the fill_na..
     # ..function from the tsibble package
     if (nrow(data) != (4 * 24 * 7 * weeks_of_data) + 96) {
-      data[nrow(data) + 1, ] = list(
-        NA,
-        lubridate::round_date(to_time, '15 minutes'),
-        NA
-      )
+      data[nrow(data) + 1, ] = list(NA, to_time, NA)
       data = as.data.frame(tsibble::fill_na(tsibble::as_tsibble(data)))
     }
 
