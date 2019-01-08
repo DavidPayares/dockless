@@ -125,20 +125,20 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
     # Retrieve the dockless_df from the dockless_dfc
     data = data_list[[1]]
 
+    # If from_time is a missing data value, data will miss one or several rows..
+    # ..at the end. In that case, add those missing rows by using the fill_na..
+    # ..function from the tsibble package
+    if (nrow(data) != (4 * 24 * 7 * weeks_of_data) + 96) {
+      data[nrow(data) + 1, ] = list(NA, to_time, NA)
+      data = as.data.frame(tsibble::fill_na(tsibble::as_tsibble(data)))
+    }
+
     # Split the data into forecast data and evaluation data
     # The forecast data is used to fit the models on
     # The evaluation data is used to compare the forecasts with the real observations
     indices = which(data$time <= time)
     fc_data = data[indices,]
     ev_data = data[-indices,]
-
-    # If from_time is a missing data value, ev_data will miss one or several rows..
-    # ..at the end. In that case, add those missing rows by using the fill_na..
-    # ..function from the tsibble package
-    if (nrow(ev_data) != 96) {
-      ev_data[nrow(ev_data) + 1, ] = list(NA, to_time, NA)
-      ev_data = as.data.frame(tsibble::fill_na(tsibble::as_tsibble(ev_data)))
-    }
 
     # If naive is TRUE, forecast the data with naive forecasts
     # If naive is FALSE, forecast the data with one of the given models
