@@ -67,7 +67,7 @@ mae_hourofday.dockless_fcc = function(x) {
   errors = sapply(x, function(x) mae_hourofday(x))
 
   # Average per hour of day
-  rowMeans(errors)
+  rowMeans(errors, na.rm = TRUE)
 
 }
 
@@ -102,6 +102,6 @@ mae_lag.dockless_fcc = function(x) {
   errors = sapply(x, function(x) mae_lag(x))
 
   # Average per hour of day
-  rowMeans(errors)
+  rowMeans(errors, na.rm = TRUE)
 
 }
