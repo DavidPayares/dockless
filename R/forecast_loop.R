@@ -195,10 +195,10 @@ forecast_testset = function(data, clusters = NULL, models = NULL,
 
       }
 
-    }
+      # Forecast
+      forecast = forecast::forecast(fc_data_model, h = 96)
 
-    # Forecast
-    forecast = forecast::forecast(fc_data_model, h = 96)
+    }
 
     # Convert to data frame
     forecast = as.data.frame(forecast)
