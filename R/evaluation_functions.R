@@ -5,9 +5,14 @@
 #'
 #' @param x object either of class \code{dockless_fc} or \code{dockless_fcc}.
 #' @param type one of 'RMSE' or 'MAE'.
-#' @return Returns a numeric value.
+#' @param average logical; if \code{TRUE}, errors for all \code{dockless_fc}
+#' objects in a \code{dockless_fcc} are averaged. If \code{FALSE}, errors
+#' for all \code{dockless_fc} objects in a \code{dockless_fcc} are given
+#' seperately, in a numeric vector. Ignored if \code{x} is an object of class
+#' \code{dockless_fc}.
+#' @return Returns either a numeric value or a vector of numeric values.
 #' @export
-error = function(x, type) UseMethod("error")
+error = function(x, type, average = TRUE) UseMethod("error")
 
 
 #' @name error
@@ -36,13 +41,22 @@ error.dockless_fc = function(x, type) {
 
 #' @name error
 #' @export
-error.dockless_fcc = function(x, type) {
+error.dockless_fcc = function(x, type, average = TRUE) {
 
   # Calculate error per dockless_fc
   errors = sapply(x, function(x) error(x, type = type))
 
-  # Average
-  mean(errors, na.rm = TRUE)
+  if (average) {
+
+    # Average
+    mean(errors, na.rm = TRUE)
+
+  } else {
+
+    # Return named vector
+    stats::setNames(error, nm = seq(1, length(errors), 1))
+
+  }
 
 }
 
@@ -163,5 +177,31 @@ error_lag.dockless_fcc = function(x, type) {
 
   # Average per hour of day
   rowMeans(errors, na.rm = TRUE)
+
+}
+
+#' Forecast error per cluster
+#'
+#' Calculates either the root mean squared error or the mean absolute
+#' error, per cluster.
+#'
+#' @param x object of class \code{dockless_fcc}.
+#' @param clusters vector specifying to which cluster each test point belongs.
+#' @param type one of 'RMSE' or 'MAE'.
+#' @return Returns a vector of numeric values.
+#' @export
+error_lag = function(x, clusters, type) {
+
+  # Calculate forecast error per dockless_fc
+  errors_vec = error(x, type = type, average = FALSE)
+
+  # Add cluster information
+  errors_df = data.frame(
+    error = errors_vec,
+    cluster = clusters
+  )
+
+  # Return named vector
+  stats::setNames(errors_df$error, nm = errors_df$cluster)
 
 }
