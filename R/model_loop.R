@@ -147,8 +147,8 @@ test_seasonality = function(data, seasons, window = 2) {
         weeks_of_data = 8
       )
 
-      # Return mae of forecast
-      mae(do.call(rbind, forecast))
+      # Return RMSE of forecast
+      error(do.call(rbind, forecast), type = 'RMSE')
 
     }
 
