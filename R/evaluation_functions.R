@@ -5,34 +5,45 @@
 #'
 #' @param x object either of class \code{dockless_fc} or \code{dockless_fcc}.
 #' @param type one of 'RMSE' or 'MAE'.
-#' @param average logical; if \code{TRUE}, errors for all \code{dockless_fc}
-#' objects in a \code{dockless_fcc} are averaged. If \code{FALSE}, errors
-#' for all \code{dockless_fc} objects in a \code{dockless_fcc} are given
-#' seperately, in a numeric vector. Ignored if \code{x} is an object of class
-#' \code{dockless_fc}.
+#' @param return one of 'average', 'min', 'max' or 'all'. If 'average',
+#' the average error of all \code{dockless_fc} objects in a
+#' \code{dockless_fcc} will be returned. If 'min', this will be the
+#' minimum error, and if 'max', this will be the maximum error. If 'all'
+#' errors for all \code{dockless_fc} objects in a \code{dockless_fcc}
+#' are given seperately, in a numeric vector. If \code{x} is an
+#' object of class \code{dockless_fc}, 'all' is the only option.
 #' @return Returns either a numeric value or a vector of numeric values.
 #' @export
-error = function(x, type, average = TRUE) UseMethod("error")
+error = function(x, type, return) UseMethod("error")
 
 
 #' @name error
 #' @export
-error.dockless_fc = function(x, type, average = TRUE) {
+error.dockless_fc = function(x, type, return = 'all') {
 
-  if (type == 'RMSE') {
+  if (return == 'all') {
 
-    # Calculate root mean squared error
-    sqrt(mean((x$error) * (x$error), na.rm = TRUE))
+    if (type == 'RMSE') {
 
-  } else if (type == 'MAE') {
+      # Calculate root mean squared error
+      sqrt(mean((x$error) * (x$error), na.rm = TRUE))
 
-    # Calculate mean absolute error
-    mean(abs(x$error), na.rm = TRUE)
+    } else if (type == 'MAE') {
+
+      # Calculate mean absolute error
+      mean(abs(x$error), na.rm = TRUE)
+
+    } else {
+
+      # Stop the function
+      stop("Type should be either 'RMSE' or 'MAE'")
+
+    }
 
   } else {
 
     # Stop the function
-    stop("Type should be either 'RMSE' or 'MAE'")
+    stop("For a dockless_fc object, return can only be set to 'all'")
 
   }
 
@@ -41,20 +52,35 @@ error.dockless_fc = function(x, type, average = TRUE) {
 
 #' @name error
 #' @export
-error.dockless_fcc = function(x, type, average = TRUE) {
+error.dockless_fcc = function(x, type, return = 'average') {
 
   # Calculate error per dockless_fc
   errors = sapply(x, function(x) error(x, type = type))
 
-  if (average) {
+  if (return == 'average') {
 
-    # Average
+    # Return average
     mean(errors, na.rm = TRUE)
 
-  } else {
+  } else if (return == 'min') {
+
+    # Return minimum
+    min(errors, na.rm = TRUE)
+
+  } else if (return == 'max') {
+
+    # Return maximum
+    min(errors, na.rm = TRUE)
+
+  } else if (return == 'all') {
 
     # Return named vector
     stats::setNames(error, nm = seq(1, length(errors), 1))
+
+  } else {
+
+    # Stop the function
+    stop("Return should be either 'average', 'min', 'max' or 'all'")
 
   }
 
@@ -142,11 +168,8 @@ error_lag.dockless_fc = function(x, type) {
 
   if (type == 'RMSE') {
 
-    # Convert error into squared error
-    x$error = (x$error)^2
-
-    # Take square root
-    agg[, 2] = sqrt(agg[, 2])
+    # Convert error into root squared error
+    x$error = sqrt((x$error)^2)
 
     # Return as named vector
     stats::setNames(x$error, nm = seq(1, nrow(x), 1))
@@ -188,12 +211,15 @@ error_lag.dockless_fcc = function(x, type) {
 #' @param x object of class \code{dockless_fcc}.
 #' @param clusters vector specifying to which cluster each test point belongs.
 #' @param type one of 'RMSE' or 'MAE'.
+#' @param return one of 'average', 'min' or 'max'. If 'average',
+#' the average error per cluster will be returned. If 'min', this will be
+#' the minimum error, and if 'max', this will be the maximum error.
 #' @return Returns a vector of numeric values.
 #' @export
-error_cluster = function(x, clusters, type) {
+error_cluster = function(x, clusters, type, return) {
 
   # Calculate forecast error per dockless_fc
-  errors_vec = error(x, type = type, average = FALSE)
+  errors_vec = error(x, type = type, return = 'all')
 
   # Add cluster information
   errors_df = data.frame(
@@ -201,7 +227,41 @@ error_cluster = function(x, clusters, type) {
     cluster = clusters
   )
 
+  if (return == 'average') {
+
+    # Calculate average error per cluster
+    agg = stats::aggregate(
+      errors_df$error,
+      by = list(errors_df$cluster),
+      FUN = mean
+    )
+
+  } else if (return == 'min') {
+
+    # Calculate minimum error per cluster
+    agg = stats::aggregate(
+      errors_df$error,
+      by = list(errors_df$cluster),
+      FUN = min
+    )
+
+  } else if (return == 'max') {
+
+    # Calculate maximum error per cluster
+    agg = stats::aggregate(
+      errors_df$error,
+      by = list(errors_df$cluster),
+      FUN = max
+    )
+
+  } else {
+
+    # Stop the function
+    stop("Return should be either 'average', 'min' or 'max'")
+
+  }
+
   # Return named vector
-  stats::setNames(errors_df$error, nm = errors_df$cluster)
+  stats::setNames(agg[, 2], nm = agg[, 1])
 
 }
