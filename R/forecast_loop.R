@@ -1,4 +1,4 @@
-#' Create a test set
+#' Create a sample of test points
 #'
 #' A test set is created inside the function by sampling 'location, time of the day,
 #' day of the week'-combinations from a dataframe with all the pick ups in the
@@ -9,13 +9,15 @@
 #' locations and times of all pick-ups in the bike sharing system.
 #' @param area object of class \code{sf}, with polygon geometry, representing the
 #' service area of the bike sharing system.
+#' @param clusters objects of class \code{sf}, with polygon geometry,
+#' representing the geographical outline of the clusters.
 #' @param first_day character specifying the first day of the test set period.
 #' Should be in the format 'YYYY-mm-dd'.
 #' @param n_weeks the length in weeks of the test set period.
 #' @param n_sample the size of the sample for each week.
 #' @return Returns an object of class \code{sf}, with point geometry
 #' @export
-create_testset = function(intensity_data, area, first_day,
+create_testpoints = function(intensity_data, area, clusters, first_day,
                           n_weeks = 2, n_sample = 500) {
 
   # Convert 'first_day' to a date
@@ -67,11 +69,28 @@ create_testset = function(intensity_data, area, first_day,
   }
 
   # Run sample_oneweek function for all weeks
-  all_samples = lapply(week_firstdays, function(x) sample_oneweek(first_day = x))
-  do.call('rbind', all_samples)
+  all_samples_list = lapply(
+    week_firstdays,
+    function(x) sample_oneweek(first_day = x)
+  )
+
+  # Combine into one sf object
+  all_samples_combined = do.call('rbind', all_samples_list)
+
+  # Project the samples and the clusters
+  all_samples_projected = project_sf(all_samples_combined)
+  clusters_projected = project_sf(clusters)
+
+  # Add cluster information to the sampled points
+  all_samples_joined = sf::st_join(all_samples_projected, clusters_projected)
+
+  # Back to WGS84
+  all_samples = sf::st_transform(all_samples_joined, crs = 4326)
+
+  # Return only necessary information
+  all_samples[, c('time', 'location', 'cluster')]
 
 }
-
 
 #' Forecast a test set
 #'
