@@ -70,12 +70,12 @@ error.dockless_fcc = function(x, type, return = 'average') {
   } else if (return == 'max') {
 
     # Return maximum
-    min(errors, na.rm = TRUE)
+    max(errors, na.rm = TRUE)
 
   } else if (return == 'all') {
 
     # Return named vector
-    stats::setNames(error, nm = seq(1, length(errors), 1))
+    stats::setNames(errors, nm = seq(1, length(errors), 1))
 
   } else {
 
@@ -112,7 +112,11 @@ error_hourofday.dockless_fc = function(x, type) {
     x$error = (x$error)^2
 
     # Aggregate by hour and calculate mse
-    agg = stats::aggregate(x$error, by = list(x$hour), FUN = mean)
+    agg = stats::aggregate(
+      x$error,
+      by = list(x$hour),
+      FUN = function(x) mean(x, na.rm = TRUE)
+    )
 
     # Take square root
     agg[, 2] = sqrt(agg[, 2])
@@ -123,7 +127,11 @@ error_hourofday.dockless_fc = function(x, type) {
     x$error = abs(x$error)
 
     # Aggregate by hour and calculate mae
-    agg = stats::aggregate(x$error, by = list(x$hour), FUN = mean)
+    agg = stats::aggregate(
+      x$error,
+      by = list(x$hour),
+      FUN = function(x) mean(x, na.rm = TRUE)
+    )
 
   } else {
 
@@ -233,7 +241,7 @@ error_cluster = function(x, clusters, type, return) {
     agg = stats::aggregate(
       errors_df$error,
       by = list(errors_df$cluster),
-      FUN = mean
+      FUN = function(x) mean(x, na.rm = TRUE)
     )
 
   } else if (return == 'min') {
@@ -242,7 +250,7 @@ error_cluster = function(x, clusters, type, return) {
     agg = stats::aggregate(
       errors_df$error,
       by = list(errors_df$cluster),
-      FUN = min
+      FUN = function(x) min(x, na.rm = TRUE)
     )
 
   } else if (return == 'max') {
@@ -251,7 +259,7 @@ error_cluster = function(x, clusters, type, return) {
     agg = stats::aggregate(
       errors_df$error,
       by = list(errors_df$cluster),
-      FUN = max
+      FUN = function(x) max(x, na.rm = TRUE)
     )
 
   } else {
@@ -263,5 +271,45 @@ error_cluster = function(x, clusters, type, return) {
 
   # Return named vector
   stats::setNames(agg[, 2], nm = agg[, 1])
+
+}
+
+
+#' Evaluate a \code{dockless_fcc} object
+#'
+#' Calculates the average, maximum and minimum root mean squared error or
+#' mean absolute of a \code{dockless_fcc} object, both for the total area
+#' as per cluster.
+#'
+#' @param x object either of class \code{dockless_fcc}.
+#' @param clusters vector specifying to which cluster each test point belongs.
+#' @param type one of 'RMSE' or 'MAE'.
+#' @return Returns a matrix.
+#' @export
+evaluate = function(x, clusters, type) {
+
+  # List the options
+  metrics = c('average', 'min', 'max')
+
+  # Calculate errors for the total area
+  errors_area = mapply(
+    function(x, y) error(x, type = type, return = y),
+    list(x, x, x),
+    metrics
+  )
+
+  # Calculate errors per cluster
+  errors_cluster = mapply(
+    function(x, y) error_cluster(x, clusters = clusters, type = type, return = y),
+    list(x, x, x),
+    metrics
+  )
+
+  # Combine in a matrix
+  errors = do.call('rbind', list(errors_area, errors_cluster))
+  rownames(errors) = c('total', as.character(seq(1, nrow(errors_cluster), 1)))
+  colnames(errors) = metrics
+
+  return(errors)
 
 }
