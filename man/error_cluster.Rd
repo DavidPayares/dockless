@@ -4,7 +4,7 @@
 \alias{error_cluster}
 \title{Forecast error per cluster}
 \usage{
-error_cluster(x, clusters, type)
+error_cluster(x, clusters, type, return)
 }
 \arguments{
 \item{x}{object of class \code{dockless_fcc}.}
@@ -12,6 +12,10 @@ error_cluster(x, clusters, type)
 \item{clusters}{vector specifying to which cluster each test point belongs.}
 
 \item{type}{one of 'RMSE' or 'MAE'.}
+
+\item{return}{one of 'average', 'min' or 'max'. If 'average',
+the average error per cluster will be returned. If 'min', this will be
+the minimum error, and if 'max', this will be the maximum error.}
 }
 \value{
 Returns a vector of numeric values.
