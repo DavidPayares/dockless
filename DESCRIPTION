@@ -15,6 +15,7 @@ Imports:
     sf,
     RPostgreSQL,
     ClustGeo,
+    clValid,
     tsibble,
     lubridate,
     stats,
@@ -23,7 +24,5 @@ Imports:
     graphics
 Suggests: 
     ggplot2,
-    dendextend,
-    lomb,
     tsibblestats
 RoxygenNote: 6.1.1
