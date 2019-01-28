@@ -294,3 +294,107 @@ forecast_period = function(data, clusters, models, length,
   structure(all_forecasts, class = c("dockless_fc_dfc", "list"))
 
 }
+
+#' Query pick-ups and drop-offs from historical data
+#'
+#' Queries individual pick-ups and drop-offs from the complete JUMP Bikes
+#' database. Database credentials are needed for this function.
+#'
+#' @param database_user character defining the user name to access the database.
+#' @param database_password character defining the password to access the database.
+#' @return Returns an object of class \code{sf}, containing all pick-ups and
+#' drop-offs, with geographical location and timestamp.
+query_usage_old = function(database_user, database_password) {
+
+  # Connect to the database
+  db_connection = RPostgreSQL::dbConnect(
+    drv = 'PostgreSQL',
+    dbname = 'jumpbikes',
+    host = 'jumpbikes.cpu2z0a5bugq.us-east-2.rds.amazonaws.com',
+    port = 5432,
+    user = database_user,
+    password = database_password
+  )
+
+  # Define query to select all unique bike id's in the data
+  query = "SELECT DISTINCT bike_id FROM map_sf_gbfs_history"
+
+  # Query all unique bike id's as a vector
+  bike_id = RPostgreSQL::dbGetQuery(conn = db_connection, statement = query)
+  bike_id_vec = bike_id$bike_id
+
+  # Function to query data for one single bike
+  query_single_bike = function(bike_id, db_connection) {
+
+    # Define query to select data only from the particular bike
+    query = paste0(
+      "SELECT
+      bike_id,
+      jump_ebike_battery_level AS battery_level,
+      date_trunc('minute', time) AS time,
+      location
+      FROM
+      map_sf_gbfs_history
+      WHERE
+      bike_id = '", bike_id, "'"
+    )
+
+    # Read from database as sf object
+    data = sf::st_read(dsn = db_connection, query = query)
+
+    # Remove duplicated timestamps with the tsibble package
+    data$duplicated = tsibble::find_duplicates(data)
+    data = data[!(data$duplicated),]
+
+    # Set time in correct time zone
+    attr(data$time, 'tzone') = 'America/Los_Angeles'
+
+    # Fill NA's with the tsibble package
+    data = as.data.frame(tsibble::fill_na(tsibble::as_tsibble(data)))
+
+    # Create seperate dataframe for startpoints
+    data_start = data[-nrow(data),]
+
+    # Create seperate dataframe for endpoints
+    data_end = data[-1,]
+
+    # For each row of data_start, specify if it is a pick up or not
+    # For each row of data_end, specify if it is a drop off or not
+    f = function(x, y) {
+      ifelse(is.na(y) & !is.na(x), TRUE, FALSE)
+    }
+
+    pickup = mapply(f, data_start$bike_id, data_end$bike_id)
+    dropoff = mapply(f, data_end$bike_id, data_start$bike_id)
+
+    # Add pickup information to data_start
+    # Add dropoff information to data_end
+    data_start$pickup = pickup
+    data_start$dropoff = FALSE
+    data_end$pickup = FALSE
+    data_end$dropoff = dropoff
+
+    # From data_start, only keep the pick ups
+    # From data_end, only keep the drop offs
+    data_start = data_start[data_start$pickup,]
+    data_end = data_end[data_end$dropoff,]
+
+    # Return the row binded data_start and data_end, as sf object
+    sf::st_as_sf(rbind(data_start, data_end))
+
+  }
+
+  # Run the query single bike function for all the bike_ids
+  f = function(x) {
+    query_single_bike(x, db_connection = db_connection)
+  }
+
+  all_data = lapply(bike_id_vec, f)
+
+  # Disconnect to the database
+  RPostgreSQL::dbDisconnect(db_connection)
+
+  # Return the row binded data
+  do.call(rbind, all_data)
+
+}
