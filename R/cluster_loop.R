@@ -14,7 +14,7 @@
 make_grid = function(area, type, ...) {
 
   # Project the area
-  area_projected = project_sf(area)
+  area_projected = dockless::project_sf(area)
 
   # Create a grid over the area, with the given cell size
   geometry = sf::st_make_grid(area_projected, ...)
@@ -48,147 +48,27 @@ make_grid = function(area, type, ...) {
 #'
 #' Calculates the number of pick-ups in each polygon of an overlaying grid.
 #'
-#' @param points individual pick-ups, as an object of class \code{sf} with point geometry.
-#' @param polygons grid, as an object of class \code{sf} with polygon geometry.
+#' @param usage pick-ups, as an object of class \code{sf} with point geometry.
+#' @param grid grid cells as an object of class \code{sf} with polygon geometry.
 #' @return Returns an numeric vector with each element specifying the number
 #' of pick-ups in the grid cell with corresponding index.
 #' @export
-usage_intensity = function(points, polygons) {
+usage_intensity = function(usage, grid) {
 
   # Project the points to State Plane California Zone III (EPSG:26943)
-  points_projected = project_sf(points)
+  points_projected = dockless::project_sf(usage)
 
   # Project the polygons to State Plane California Zone III (EPSG:26943)
-  polygons_projected = project_sf(polygons)
+  polygons_projected = dockless::project_sf(grid)
 
   # Calculate the number of points in each polygon
   f = function(x) {
     nrow(sf::st_intersection(x, points_projected))
   }
 
-  sapply(split(polygons, 1:nrow(polygons)), f)
+  sapply(split(polygons_projected, 1:nrow(polygons_projected)), f)
 
 }
-
-
-#' Dissimilarity matrix of a \code{dockless_dfc} object
-#'
-#' Creates a dissimilarity matrix based on the euclidean distances between all
-#' \code{dockless_df} objects in a \code{dockless_dfc}.
-#'
-#' @param data object of class \code{dockless_dfc}.
-#' @return Returns an object of class \code{dist}.
-#' @export
-dissimilarity_data = function(data) {
-
-  # Aggregate all data frames by weekhour
-  data_aggregated = aggregate_by_weekhour(data)
-
-  # Normalize the distance column of each aggregated data frame
-  f = function(x) {
-    scale_minmax(x$distance)
-  }
-
-  distance_scaled_list = lapply(data_aggregated, f)
-
-  # Store the distance_scaled columns of all data frames in one matrix
-  distance_scaled_matrix = do.call(rbind, distance_scaled_list)
-
-  # Create euclidean distance matrix
-  stats::dist(distance_scaled_matrix, method = 'euclidean')
-
-}
-
-#' Dissimilarity matrix of a \code{sf} object
-#'
-#' Creates a dissimilarity matrix based on the adjacency of all polygons in a
-#' \code{sf} object with polygon geometry.
-#'
-#' @param polygons object of class \code{sf} with polygon geometry.
-#' @return Returns an object of class \code{dist}.
-#' @export
-dissimilarity_spatial = function(polygons) {
-
-  # Project the polygons to State Plane California Zone III (EPSG:26943)
-  polygons_projected = project_sf(polygons)
-
-  # Create logical adjacency matrix
-  adjacency = as.matrix(
-    sf::st_relate(polygons_projected, polygons_projected, pattern = "F***T****")
-  )
-
-  # Give a value of 1 to FALSE and 0 to TRUE, to give neighbors..
-  # ..a lower dissimilarity value
-  adjacency_inverse = 1 - adjacency
-
-  # Convert to a 'dist' object
-  stats::as.dist(adjacency_inverse)
-
-}
-
-#' Dendrogram of non-spatial hierarchical clustering of a \code{dockless_dfc} object
-#'
-#' The non-spatial dendrogram is meant to choose the number of clusters k used in
-#' a spatially-constrained hierarchical clustering.
-#'
-#' @param data object of class \code{dockless_dfc}.
-#' @return Returns a plot.
-#' @export
-choose_k_plot = function(data) {
-
-  # Non-spatial clustering
-  cluster = spatial_cluster(data = data, alpha = 0)
-
-  # Plot the dendrogram
-  graphics::plot(cluster$hclust)
-
-}
-
-#' Homogeneity plot of spatially constrained hierarchical clustering of
-#' a \code{dockless_dfc} object
-#'
-#' The homogeneity plot is meant to choose the optimal value of the mixing
-#' parameter alpha, which sets the strength of the spatial constraint in
-#' a spatially-constrained hierarchical clustering.
-#'
-#' @param data object of class \code{dockless_dfc}.
-#' @param polygons object of class \code{sf} with polygon geometry, in which each
-#' feature refers to the spatial location of each \code{dockless_df} object in
-#' the \code{dockless_dfc}.
-#' @param k number of clusters.
-#' @param plot logical; defining if the output should be a plot.
-#' @param range_alpha the values of alpha to be tested for. Should be a vector
-#' of real values between 0 and 1.
-#' @return If \code{plot} is \code{TRUE}, it returns a plot. Otherwise, it
-#' returns an object of class \code{choicealpha} from the package \code{ClustGeo}.
-#' @export
-choose_alpha_plot = function(data, polygons, k, plot = TRUE,
-                             range_alpha = seq(0,1,0.1)) {
-
-  # Create dissimilarity matrix from the data
-  data_dis = dissimilarity_data(data)
-
-  # Create a spatial dissimilarity matrix
-  spatial_dis = dissimilarity_spatial(polygons)
-
-  # Plot the homogeneity plot
-  choicealpha = ClustGeo::choicealpha(
-    data_dis,
-    spatial_dis,
-    range.alpha = range_alpha,
-    K = k,
-    graph = FALSE
-  )
-
-  # If plot is TRUE (default), return the plot
-  if (plot) {
-    graphics::plot(choicealpha, norm = TRUE)
-  } else {
-    return(choicealpha)
-  }
-
-}
-
 
 #' Spatially constrained hierarchical clustering of a \code{dockless_dfc} object
 #'
@@ -196,49 +76,100 @@ choose_alpha_plot = function(data, polygons, k, plot = TRUE,
 #' spatially constrained hierarchical clustering.
 #'
 #' @param data object of class \code{dockless_dfc}.
-#' @param polygons object of class \code{sf} with polygon geometry, in which each
-#' feature refers to the spatial location of each \code{dockless_df} object in
+#' @param grid grid cells as object of class \code{sf} with polygon geometry, in which
+#' each cell refers to the spatial location of each \code{dockless_df} object in
 #' the \code{dockless_dfc}.
-#' @param k number of clusters.
-#' @param alpha value of the mixing parameter alpha, which sets the strength
-#' of the spatial constraint.
-#' @return Returns an object of class \code{dockless_clust}, which is a list
-#' containing two elements: 1 - a vector that specifies for each of the given
-#' \code{dockless_df} objects to which cluster it belongs and 2 - object of class
-#' \code{hclust} which describes the tree produced by the clustering process.
+#' @param K vector of integers specifying which values of k, the number of
+#' clusters, should be tested.
+#' @param omega vector of values specifying which values of alpha, the mixing
+#' parameter, should be tested.
+#' @param return one of 'vector' or 'polygons'.
+#' @return If \code{return} is set to 'vector', the output is a numeric vector of cluster
+#' indices that specifies for each of the given \code{dockless_df} objects to which
+#' cluster it belongs. If \code{return} is set to 'polygons', the output contains the
+#' geographical outines of each cluster, bundled in an object of class \code{sf} with
+#' polygon geometry.
 #' @export
-spatial_cluster = function(data, polygons = NULL, k = NULL, alpha = 0) {
+spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1),
+                           return = 'polygons') {
 
   # Create a dissimilarity matrix from the data
-  data_dis = dissimilarity_data(data)
+  data_dis = dockless::dissimilarity_data(data)
 
   # Create a spatial dissimilarity matrix
-  if (is.null(polygons)) {
-    spatial_dis = NULL
-  } else {
-    spatial_dis = dissimilarity_spatial(polygons)
+  spatial_dis = dockless::dissimilarity_spatial(grid)
+
+  # Calculate Dunn Index for all k in K
+  f = function(x) {
+
+    h_clust = ClustGeo::hclustgeo(
+      D0 = data_dis,
+      alpha = 0
+    )
+
+    clusters = stats::cutree(h_clust, k = x)
+
+    clValid::dunn(
+      distance = data_dis,
+      clusters = clusters
+    )
+
   }
 
+  dunn_indices = sapply(K, f)
+
+  # Choose the optimal value of k
+  k_star = K[which.max(dunn_indices)]
+
+  # Spatially constrained hierarchical clusterings for all alpha in omega
+  information_criteria = ClustGeo::choicealpha(
+    data_dis,
+    spatial_dis,
+    range.alpha = omega,
+    K = k_star,
+    graph = FALSE
+  )
+
+  # Choose the optimal value of alpha
+  alpha_star = omega[which.max(information_criteria$Qnorm[which(information_criteria$Qnorm[, 1] >= 0.9), 2])]
+
   # Cluster with spatially constrained hierarchical clustering
-  hclust = ClustGeo::hclustgeo(
+  sch_clust = ClustGeo::hclustgeo(
     D0 = data_dis,
     D1 = spatial_dis,
-    alpha = alpha
+    alpha = alpha_star
   )
 
   # Cut the tree based on the provided number of clusters k
-  if (is.null(k)) {
-    clusters = NULL
-  } else {
-    clusters = stats::cutree(hclust, k = k)
-  }
+  cluster_indices = stats::cutree(sch_clust, k = k_star)
 
-  # Combine clusters and hclust into a list
-  # Return as object of class dockless_clust
-  structure(
-    list(clusters = clusters, hclust = hclust),
-    class = c("dockless_clust", "list")
-  )
+  if (return == 'vector') {
+
+    return(cluster_indices)
+
+  } else {
+
+    # Add cluster information to grid cells
+    grid$cluster = cluster_indices
+
+    # Split by cluster
+    cells_per_cluster = split(
+      x = grid,
+      f = grid$cluster
+    )
+
+    # Dissolve grid cells per cluster
+    cells_dissolved = lapply(
+      cells_per_cluster,
+      function(x) sf::st_sf(sf::st_union(x))
+    )
+
+    # Bind together
+    cluster_outlines = do.call('rbind', cells_dissolved)
+
+    return(cluster_outlines)
+
+  }
 
 }
 
