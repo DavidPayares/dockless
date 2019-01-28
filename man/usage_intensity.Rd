@@ -4,12 +4,12 @@
 \alias{usage_intensity}
 \title{Usage intensity in grid cells}
 \usage{
-usage_intensity(points, polygons)
+usage_intensity(usage, grid)
 }
 \arguments{
-\item{points}{individual pick-ups, as an object of class \code{sf} with point geometry.}
+\item{usage}{pick-ups, as an object of class \code{sf} with point geometry.}
 
-\item{polygons}{grid, as an object of class \code{sf} with polygon geometry.}
+\item{grid}{grid cells as an object of class \code{sf} with polygon geometry.}
 }
 \value{
 Returns an numeric vector with each element specifying the number

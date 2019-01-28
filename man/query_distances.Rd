@@ -2,7 +2,7 @@
 % Please edit documentation in R/query_functions.R
 \name{query_distances}
 \alias{query_distances}
-\title{Query historical data for set of geographical locations}
+\title{Query historical distance data}
 \usage{
 query_distances(locations, from = as.POSIXct("2018-09-10 16:30:00",
   format = "\%Y-\%m-\%d \%H:\%M:\%S", tz = "America/Los_Angeles"),
@@ -12,11 +12,11 @@ query_distances(locations, from = as.POSIXct("2018-09-10 16:30:00",
 \item{locations}{object of class \code{sf} with point geometry.}
 
 \item{from}{timestamp of class \code{POSIXct} defining from which timestamp
-on historical data should be queried. Default is set to the first timestamp
+on data should be queried. Default is set to the first timestamp
 in the database (i.e. earlier timestamps than the default are not possible).}
 
 \item{to}{timestamp of class \code{POSIXct} defining until which timestamp
-historical data should be queried. Default is set to the system time.}
+data should be queried. Default is set to the system time.}
 
 \item{database_user}{character defining the user name to access the database.}
 
@@ -25,10 +25,10 @@ historical data should be queried. Default is set to the system time.}
 \value{
 Returns an object of class \code{dockless_dfc}, which is a collection
 of data frames of class \code{dockless_df}. Each \code{dockless_df} object is
-a time serie of historical distance data for a specific geographical location.
+a time series of historical distance data for a specific geographical location.
 }
 \description{
-Queries, for each of the given geographical locations, distances to the
+Retrieves, for each of the given geographical locations, distances to the
 nearest available bike for several timestamps in the past, from the JUMP Bikes
 database. Database credentials are needed for this function.
 }

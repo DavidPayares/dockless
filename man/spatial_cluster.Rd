@@ -4,25 +4,30 @@
 \alias{spatial_cluster}
 \title{Spatially constrained hierarchical clustering of a \code{dockless_dfc} object}
 \usage{
-spatial_cluster(data, polygons = NULL, k = NULL, alpha = 0)
+spatial_cluster(data, grid, K, omega = seq(0, 1, 0.1),
+  return = "polygons")
 }
 \arguments{
 \item{data}{object of class \code{dockless_dfc}.}
 
-\item{polygons}{object of class \code{sf} with polygon geometry, in which each
-feature refers to the spatial location of each \code{dockless_df} object in
+\item{grid}{grid cells as object of class \code{sf} with polygon geometry, in which
+each cell refers to the spatial location of each \code{dockless_df} object in
 the \code{dockless_dfc}.}
 
-\item{k}{number of clusters.}
+\item{K}{vector of integers specifying which values of k, the number of
+clusters, should be tested.}
 
-\item{alpha}{value of the mixing parameter alpha, which sets the strength
-of the spatial constraint.}
+\item{omega}{vector of values specifying which values of alpha, the mixing
+parameter, should be tested.}
+
+\item{return}{one of 'vector' or 'polygons'.}
 }
 \value{
-Returns an object of class \code{dockless_clust}, which is a list
-containing two elements: 1 - a vector that specifies for each of the given
-\code{dockless_df} objects to which cluster it belongs and 2 - object of class
-\code{hclust} which describes the tree produced by the clustering process.
+If \code{return} is set to 'vector', the output is a numeric vector of cluster
+indices that specifies for each of the given \code{dockless_df} objects to which
+cluster it belongs. If \code{return} is set to 'polygons', the output contains the
+geographical outines of each cluster, bundled in an object of class \code{sf} with
+polygon geometry.
 }
 \description{
 Clusters the \code{dockless_df} objects in a \code{dockless_dfc} with

@@ -2,14 +2,18 @@
 % Please edit documentation in R/query_functions.R
 \name{update_distances}
 \alias{update_distances}
-\title{Updates a \code{dockless_dfc} object with new data}
+\title{Updates a set of distance data with new data}
 \usage{
-update_distances(locations, data, database_user, database_password)
+update_distances(data, locations, to = Sys.time(), database_user,
+  database_password)
 }
 \arguments{
+\item{data}{object of class \code{dockless_dfc} to be updated.}
+
 \item{locations}{object of class \code{sf} with point geometry.}
 
-\item{data}{object of class \code{dockless_dfc} to be updated.}
+\item{to}{timestamp of class \code{POSIXct} defining until which timestamp
+data should be queried. Default is set to the system time.}
 
 \item{database_user}{character defining the user name to access the database.}
 
