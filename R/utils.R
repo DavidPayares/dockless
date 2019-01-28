@@ -117,6 +117,61 @@ aggregate_by_weekhour = function(data, week_start = 1) {
   lapply(data, f)
 }
 
+#' Dissimilarity matrix of a \code{dockless_dfc} object
+#'
+#' Creates a dissimilarity matrix based on the euclidean distances between all
+#' \code{dockless_df} objects in a \code{dockless_dfc}.
+#'
+#' @param data object of class \code{dockless_dfc}.
+#' @return Returns an object of class \code{dist}.
+#' @export
+dissimilarity_data = function(data) {
+
+  # Aggregate all data frames by weekhour
+  data_aggregated = dockless::aggregate_by_weekhour(data)
+
+  # Normalize the distance column of each aggregated data frame
+  f = function(x) {
+    dockless::scale_minmax(x$distance)
+  }
+
+  distance_scaled_list = lapply(data_aggregated, f)
+
+  # Store the distance_scaled columns of all data frames in one matrix
+  distance_scaled_matrix = do.call(rbind, distance_scaled_list)
+
+  # Create euclidean distance matrix
+  stats::dist(distance_scaled_matrix, method = 'euclidean')
+
+}
+
+#' Dissimilarity matrix of a \code{sf} object
+#'
+#' Creates a dissimilarity matrix based on the adjacency of all polygons in a
+#' \code{sf} object with polygon geometry.
+#'
+#' @param polygons object of class \code{sf} with polygon geometry.
+#' @return Returns an object of class \code{dist}.
+#' @export
+dissimilarity_spatial = function(polygons) {
+
+  # Project the polygons to State Plane California Zone III (EPSG:26943)
+  polygons_projected = dockless::project_sf(polygons)
+
+  # Create logical adjacency matrix
+  adjacency = as.matrix(
+    sf::st_relate(polygons_projected, polygons_projected, pattern = "F***T****")
+  )
+
+  # Give a value of 1 to FALSE and 0 to TRUE, to give neighbors..
+  # ..a lower dissimilarity value
+  adjacency_inverse = 1 - adjacency
+
+  # Convert to a 'dist' object
+  stats::as.dist(adjacency_inverse)
+
+}
+
 #' Weighted centroid
 #'
 #' Calculates the weighted centroid of an object of class \code{sf} with
