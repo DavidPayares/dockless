@@ -383,10 +383,7 @@ query_usage = function(bikes,
   # Disconnect to the database
   RPostgreSQL::dbDisconnect(db_connection)
 
-  # Remove NULL elements
-  all_data_cleaned = all_data[-which(sapply(all_data, is.null))]
-
   # Return as a single object
-  do.call('rbind', all_data_cleaned)
+  do.call('rbind', all_data)
 
 }
