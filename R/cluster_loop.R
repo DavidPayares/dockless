@@ -4,14 +4,13 @@
 #' of the dockless bike sharing system.
 #'
 #' @param area object of class \code{sf} representing the service area.
-#' @param type either \code{polygons} or \code{centers}.
 #' @param ... further arguments passed to \code{st_make_grid}.
 #' @return If \code{type} is set to \code{polygons}, it returns an object
 #' of class \code{sf} containing the grid cells as square polygons.
 #' If \code{type} is set to \code{centers} it returns an object of
 #' class \code{sf} containing the grid cell centroids as points.
 #' @export
-create_grid = function(area, type, ...) {
+create_grid = function(area, ...) {
 
   # Project the area
   area_projected = dockless::project_sf(area)
@@ -27,26 +26,7 @@ create_grid = function(area, type, ...) {
   grid_clipped = grid[grid$intersects,]
   grid_clipped$intersects = NULL
 
-  # If type is 'centers', calculate grid centers and then transform back to WGS84
-  # If type is 'cells', transform to WGS84 directly
-  if (type == 'centers') {
-
-    # Calculate centroids of the grid cells
-    centers = suppressWarnings(
-      sf::st_centroid(grid_clipped)
-    )
-
-    sf::st_transform(centers, crs = 4326)
-
-  } else if (type == 'cells') {
-
-    sf::st_transform(grid_clipped, crs = 4326)
-
-  } else {
-
-    stop("Variable 'type' should be either 'cells' or 'centers'")
-
-  }
+  sf::st_transform(grid_clipped, crs = 4326)
 
 }
 
@@ -104,23 +84,17 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
   spatial_dis = dockless::dissimilarity_spatial(grid)
 
   # Calculate Dunn Index for all k in K
-  f = function(x) {
-
-    h_clust = ClustGeo::hclustgeo(
-      D0 = data_dis,
-      alpha = 0
+  validation = suppressWarnings(
+    clValid(
+      obj = as.matrix(data_dis),
+      nClust = K,
+      clMethods = 'hierarchical',
+      validation = 'internal',
+      method = 'ward'
     )
+  )
 
-    clusters = stats::cutree(h_clust, k = x)
-
-    clValid::dunn(
-      distance = data_dis,
-      clusters = clusters
-    )
-
-  }
-
-  dunn_indices = sapply(K, f)
+  dunn_indices = validation@measures[2, , ]
 
   # Choose the optimal value of k
   k_star = K[which.max(dunn_indices)]
@@ -148,7 +122,7 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
   cluster_indices = stats::cutree(sch_clust, k = k_star)
 
   # Add cluster information to grid cells
-  grid$cluster = as.factor(cluster_indices)
+  grid$cluster = cluster_indices
 
   # Split by cluster
   cells_per_cluster = split(
@@ -159,14 +133,54 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
   # Dissolve grid cells per cluster
   cells_dissolved = lapply(
     cells_per_cluster,
-    function(x) sf::st_sf(sf::st_union(x))
+    function(x) sf::st_union(x)
   )
 
-  # Bind together
-  cluster_outlines = do.call('rbind', cells_dissolved)
+  # If a cluster is a multipolygon, split it into seperate polygons
+  # Return one sf data frame
+  f = function(x) {
+    if (methods::is(x, 'sfc_MULTIPOLYGON')) {
+
+      cluster = sf::st_sf(sf::st_cast(x, 'POLYGON'))
+      names(cluster)[1]= 'geometry'
+      st_geometry(cluster) = 'geometry'
+
+      return(cluster)
+
+    } else {
+      cluster = sf::st_sf(x)
+      names(cluster)[1]= 'geometry'
+      st_geometry(cluster) = 'geometry'
+
+      return(cluster)
+    }
+  }
+
+  cluster_outlines = do.call('rbind', lapply(cells_dissolved, f))
+
+  # Sort based on Y coordinate of centroid
+  cluster_centroids = sf::st_coordinates(
+    sf::st_centroid(dockless::project_sf(cluster_outlines))
+  )
+
+  cluster_outlines = cluster_outlines[order(cluster_centroids[,"Y"]), ]
+
+  # Add cluster index
+  cluster_outlines$cluster = as.factor(c(1:nrow(cluster_outlines)))
+
+  # Update cluster information of grid cells
+  grid$cluster = NULL
+  grid_updated = sf::st_join(
+    dockless::project_sf(grid),
+    dockless::project_sf(cluster_outlines)
+  )
+  grid_update = sf::st_transform(crs = 4326)
+
+  # Retrieve cluster indices
+  cluster_indices_updated = grid_updated$cluster
 
   # Return list of indices and outlines
-  list(indices = cluster_indices, outlines = cluster_outlines)
+  list(indices = cluster_indices_updated, outlines = cluster_outlines)
 
 }
 
