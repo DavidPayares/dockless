@@ -34,18 +34,18 @@ query_distances = function(locations,
   from = as.POSIXlt(from)
   to = as.POSIXlt(to)
 
+  # Connect to the database
+  db_connection = RPostgreSQL::dbConnect(
+    drv = 'PostgreSQL',
+    dbname = 'jumpbikes',
+    host = 'jumpbikes.cpu2z0a5bugq.us-east-2.rds.amazonaws.com',
+    port = 5432,
+    user = database_user,
+    password = database_password
+  )
+
   # Function to query data for one single location
   query_single_location = function(location) {
-
-    # Connect to the database
-    db_connection = RPostgreSQL::dbConnect(
-      drv = 'PostgreSQL',
-      dbname = 'jumpbikes',
-      host = 'jumpbikes.cpu2z0a5bugq.us-east-2.rds.amazonaws.com',
-      port = 5432,
-      user = database_user,
-      password = database_password
-    )
 
     # SQL code to create a geographical point from the location coordinates
     sql_point = paste0(
@@ -84,9 +84,6 @@ query_distances = function(locations,
     # Read from database
     data = RPostgreSQL::dbGetQuery(conn = db_connection, statement = query)
 
-    # Disconnect to the database
-    RPostgreSQL::dbDisconnect(db_connection)
-
     # Set time in correct time zone
     attr(data$time, 'tzone') = 'America/Los_Angeles'
 
@@ -104,6 +101,9 @@ query_distances = function(locations,
     1,
     function(x) query_single_location(x)
   )
+
+  # Disconnect to the database
+  RPostgreSQL::dbDisconnect(db_connection)
 
   # When querying for a lot of different locations, the first locations will..
   # ..have less timestamps than later ones. For other functions it is important..
@@ -281,18 +281,18 @@ query_usage = function(bikes,
   from = as.POSIXlt(from)
   to = as.POSIXlt(to)
 
+  # Connect to the database
+  db_connection = RPostgreSQL::dbConnect(
+    drv = 'PostgreSQL',
+    dbname = 'jumpbikes',
+    host = 'jumpbikes.cpu2z0a5bugq.us-east-2.rds.amazonaws.com',
+    port = 5432,
+    user = database_user,
+    password = database_password
+  )
+
   # Function to query data for one single bike
   query_single_bike = function(bike) {
-
-    # Connect to the database
-    db_connection = RPostgreSQL::dbConnect(
-      drv = 'PostgreSQL',
-      dbname = 'jumpbikes',
-      host = 'jumpbikes.cpu2z0a5bugq.us-east-2.rds.amazonaws.com',
-      port = 5432,
-      user = database_user,
-      password = database_password
-    )
 
     # SQL code to query historical location data for a bike
     query = paste0(
@@ -323,9 +323,6 @@ query_usage = function(bikes,
 
     # Read from database as sf object
     data = sf::st_read(dsn = db_connection, query = query)
-
-    # Disconnect to the database
-    RPostgreSQL::dbDisconnect(db_connection)
 
     # Set time in correct time zone
     attr(data$time, 'tzone') = 'America/Los_Angeles'
@@ -372,6 +369,9 @@ query_usage = function(bikes,
     bike_indices,
     function(x) query_single_bike(x)
   )
+
+  # Disconnect to the database
+  RPostgreSQL::dbDisconnect(db_connection)
 
   # Return as a single object
   do.call('rbind', all_data)
