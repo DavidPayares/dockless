@@ -130,8 +130,8 @@ test_seasonality = function(data, seasons) {
     # Forecast
     forecast = dockless::forecast_lastweek(
       data = forecast_period,
-      model = model,
-      weeks_of_data = 2
+      method = 'DBAFS',
+      model = model
     )
 
     # Return RMSE of forecast
