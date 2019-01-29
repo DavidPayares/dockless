@@ -85,7 +85,7 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
 
   # Calculate Dunn Index for all k in K
   validation = suppressWarnings(
-    clValid(
+    clValid::clValid(
       obj = as.matrix(data_dis),
       nClust = K,
       clMethods = 'hierarchical',
@@ -143,14 +143,14 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
 
       cluster = sf::st_sf(sf::st_cast(x, 'POLYGON'))
       names(cluster)[1]= 'geometry'
-      st_geometry(cluster) = 'geometry'
+      sf::st_geometry(cluster) = 'geometry'
 
       return(cluster)
 
     } else {
       cluster = sf::st_sf(x)
       names(cluster)[1]= 'geometry'
-      st_geometry(cluster) = 'geometry'
+      sf::st_geometry(cluster) = 'geometry'
 
       return(cluster)
     }
