@@ -342,6 +342,11 @@ query_usage = function(bikes,
     # Create a data.frame containing all timestamps t+1
     data_t1 = data[-1,]
 
+    # If data_t has zero rows, return the empty data_t
+    if (nrow(data_t) == 0) {
+      return(data_t[, c(1:4)])
+    }
+
     # Test first requirement (i.e. t is not an NA, t+1 is an NA)
     f = function(x, y) {
       ifelse(is.na(y) & !is.na(x), TRUE, FALSE)
