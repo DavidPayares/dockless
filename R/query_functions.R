@@ -251,9 +251,8 @@ query_bikes = function(from = as.POSIXct('2018-09-10 16:30:00',
 #' Retrieves individual pick-ups from the JUMP Bikes database, for a given set
 #' of bikes, during a given period. Database credentials are needed for this function.
 #'
-#' @param bikes objects of class \code{data.frame},  or similar, that contains
-#' the ID's of the bikes of interest. Should be obtained with the
-#' \code{dockless::query_bikes} function.
+#' @param bikes a vector that contains the ID's of the bikes of interest.
+#' Should be obtained with the \code{dockless::query_bikes} function.
 #' @param from timestamp of class \code{POSIXct} defining from which timestamp
 #' on data should be queried. Default is set to the first timestamp
 #' in the database (i.e. earlier timestamps than the default are not possible).
@@ -272,7 +271,7 @@ query_usage = function(bikes,
                        database_user, database_password) {
 
   # Create a vector with the given bike id's
-  bike_indices = bikes$bike_id
+  bike_indices = bikes
 
   # Set the 'from' and 'to' timestamp in UTM timezone
   attr(from, 'tzone') = 'UTC'
@@ -337,14 +336,7 @@ query_usage = function(bikes,
 
     # Fill NA's with the tsibble package
     data = as.data.frame(
-      tsibble::fill_na(
-        tsibble::build_tsibble(
-          data,
-          key = id(),
-          index = time,
-          interval = tsibble::new_interval(minute = 1)
-        )
-      )
+      tsibble::fill_na(tsibble::as_tsibble(data))
     )
 
     # Create a data.frame containing all timestamps t
