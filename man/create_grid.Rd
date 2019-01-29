@@ -4,12 +4,10 @@
 \alias{create_grid}
 \title{Square grid over service area}
 \usage{
-create_grid(area, type, ...)
+create_grid(area, ...)
 }
 \arguments{
 \item{area}{object of class \code{sf} representing the service area.}
-
-\item{type}{either \code{polygons} or \code{centers}.}
 
 \item{...}{further arguments passed to \code{st_make_grid}.}
 }
