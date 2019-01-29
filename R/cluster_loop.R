@@ -30,15 +30,22 @@ make_grid = function(area, type, ...) {
   # If type is 'centers', calculate grid centers and then transform back to WGS84
   # If type is 'cells', transform to WGS84 directly
   if (type == 'centers') {
+
     # Calculate centroids of the grid cells
     centers = suppressWarnings(
       sf::st_centroid(grid_clipped)
     )
+
     sf::st_transform(centers, crs = 4326)
+
   } else if (type == 'cells') {
+
     sf::st_transform(grid_clipped, crs = 4326)
+
   } else {
+
     stop("Variable 'type' should be either 'cells' or 'centers'")
+
   }
 
 }
@@ -181,39 +188,31 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1),
 #' by taking, per cluster, the centroid of the grid cell centers , weighted by
 #' the usage intensity of the grid cell polygons.
 #'
-#' @param points all grid cell centers as an \code{sf} object with point geometry.
-#' @param clusters vector specifying to which cluster each grid cell center belongs.
-#' @param weights vector specifying the usage intensity of each grid cell
-#' corresponding to a grid center.
+#' @param centroids all grid cell centroids as an \code{sf} object with point geometry,
+#' containing at least the attributes \code{cluster}, specifying to which cluster each
+#' grid cell centroid belongs, and \code{intensity}, specifying the number of pick-ups
+#' in the grid cell that corresponds to the grid cell centroid.
 #' @return Returns an object of class \code{sf} with point geometry.
 #' @export
-create_modelpoints = function(points, clusters, weights) {
+create_modelpoints = function(centroids) {
 
-  # Split the points object by cluster
-  points_per_cluster = split(
-    x = points,
-    f = unclass(points[clusters])[[1]]
+  # Split the centroids object by cluster
+  centroids_per_cluster = split(
+    x = centroids,
+    f = centroids$cluster
   )
 
   # Calculate weighted centroid per cluster
   # Output as sf data frame instead of only sfc geometry
   f = function(x) {
-    geometry = weighted_centroid(
+    geometry = dockless::weighted_centroid(
       points = x,
-      weights = unclass(x[weights])[[1]]
+      weights = x$intensity
     )
 
     sf::st_sf(geometry)
   }
 
-  modelpoints_list = lapply(points_per_cluster, f)
-
-  # Bind together into one sf data frame
-  modelpoints_df = do.call(rbind, modelpoints_list)
-
-  # Add cluster information
-  modelpoints_df$cluster = unique(unclass(points[clusters])[[1]])
-
-  return(modelpoints_df)
+  do.call('rbind', lapply(centroids_per_cluster, f))
 
 }
