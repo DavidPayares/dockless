@@ -90,15 +90,12 @@ usage_intensity = function(usage, grid) {
 #' clusters, should be tested.
 #' @param omega vector of values specifying which values of alpha, the mixing
 #' parameter, should be tested.
-#' @param return one of 'vector' or 'polygons'.
-#' @return If \code{return} is set to 'vector', the output is a numeric vector of cluster
+#' @return Returns a list of 2 with one element being a numeric vector of cluster
 #' indices that specifies for each of the given \code{dockless_df} objects to which
-#' cluster it belongs. If \code{return} is set to 'polygons', the output contains the
-#' geographical outines of each cluster, bundled in an object of class \code{sf} with
-#' polygon geometry.
+#' cluster it belongs, and the second element being the geographical outines of each
+#' cluster, bundled in an object of class \code{sf} with polygon geometry.
 #' @export
-spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1),
-                           return = 'polygons') {
+spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
 
   # Create a dissimilarity matrix from the data
   data_dis = dockless::dissimilarity_data(data)
@@ -150,33 +147,26 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1),
   # Cut the tree based on the provided number of clusters k
   cluster_indices = stats::cutree(sch_clust, k = k_star)
 
-  if (return == 'vector') {
+  # Add cluster information to grid cells
+  grid$cluster = as.factor(cluster_indices)
 
-    return(cluster_indices)
+  # Split by cluster
+  cells_per_cluster = split(
+    x = grid,
+    f = grid$cluster
+  )
 
-  } else {
+  # Dissolve grid cells per cluster
+  cells_dissolved = lapply(
+    cells_per_cluster,
+    function(x) sf::st_sf(sf::st_union(x))
+  )
 
-    # Add cluster information to grid cells
-    grid$cluster = cluster_indices
+  # Bind together
+  cluster_outlines = do.call('rbind', cells_dissolved)
 
-    # Split by cluster
-    cells_per_cluster = split(
-      x = grid,
-      f = grid$cluster
-    )
-
-    # Dissolve grid cells per cluster
-    cells_dissolved = lapply(
-      cells_per_cluster,
-      function(x) sf::st_sf(sf::st_union(x))
-    )
-
-    # Bind together
-    cluster_outlines = do.call('rbind', cells_dissolved)
-
-    return(cluster_outlines)
-
-  }
+  # Return list of indices and outlines
+  list(indices = cluster_indices, outlines = cluster_outlines)
 
 }
 
