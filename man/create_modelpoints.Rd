@@ -4,15 +4,13 @@
 \alias{create_modelpoints}
 \title{Create model points}
 \usage{
-create_modelpoints(points, clusters, weights)
+create_modelpoints(centroids)
 }
 \arguments{
-\item{points}{all grid cell centers as an \code{sf} object with point geometry.}
-
-\item{clusters}{vector specifying to which cluster each grid cell center belongs.}
-
-\item{weights}{vector specifying the usage intensity of each grid cell
-corresponding to a grid center.}
+\item{centroids}{all grid cell centroids as an \code{sf} object with point geometry,
+containing at least the attributes \code{cluster}, specifying to which cluster each
+grid cell centroid belongs, and \code{intensity}, specifying the number of pick-ups
+in the grid cell that corresponds to the grid cell centroid.}
 }
 \value{
 Returns an object of class \code{sf} with point geometry.
