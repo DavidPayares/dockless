@@ -344,7 +344,7 @@ query_usage = function(bikes,
 
     # If data_t has zero rows, return the empty data_t
     if (nrow(data_t) == 0) {
-      return(data_t[, c(1:4)])
+      return(NULL)
     }
 
     # Test first requirement (i.e. t is not an NA, t+1 is an NA)
