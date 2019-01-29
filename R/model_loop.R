@@ -17,29 +17,28 @@
 #' period length - or, in the case of multiple seasonality, combination of
 #' seasonal period lenghts - in time lags. No seasonality should be represented
 #' by \code{NULL}.
-#' @param window rolling window for time series cross validation, in weeks.
-#' Ignored when \code{auto_seasonality} is set to \code{FALSE}.
 #' @return Returns an object of class \code{ARIMA} for non-seasonal data and an
 #' object of class \code{stlm} for seasonal data. Both classes come from the
 #' \code{forecast} package.
 #' @export
 build_single_model = function(data, auto_seasonality = TRUE,
-                              seasons = list(NULL, 96, 672, c(96, 672)),
-                              window = 2) {
+                              seasons = list(NULL, 96, 672, c(96, 672))) {
 
   # If auto_seasonality is TRUE, automatically define the seasonal periods
   if (auto_seasonality) {
-    seasons = test_seasonality(
+
+    seasons = dockless::test_seasonality(
       data = data,
-      seasons = seasons,
-      window = window
+      seasons = seasons
     )
+
   }
 
   # If seasons is NULL, fit an ARIMA model directly
   # If seasons is not NULL, decompose with STL and then..
   # ..fit an ARIMA model to the trend + remainder
   if (is.null(seasons)) {
+
     # Convert the distance column of the data into a ts object
     distances = stats::ts(data$distance)
 
@@ -57,8 +56,10 @@ build_single_model = function(data, auto_seasonality = TRUE,
 
     # Fit ARIMA model to that data
     model = model_function(distances)
+
   } else {
-    # Convert the distance column of the data into a ts object
+
+    # Convert the distance column of the data into a msts object
     distances = forecast::msts(
       data$distance,
       seasonal.periods = seasons
@@ -66,12 +67,14 @@ build_single_model = function(data, auto_seasonality = TRUE,
 
     # Define the model function for the non-seasonal part of the data
     model_function = function(x) {
+
       forecast::auto.arima(
         y = x,
         seasonal = FALSE,
         stepwise = FALSE,
         approximation = FALSE
       )
+
     }
 
     # Decompose and fit ARIMA model to trend+remainder
@@ -100,70 +103,46 @@ build_single_model = function(data, auto_seasonality = TRUE,
 #' @param seasons a list of different seasonal period lengths - or, in the case
 #' of multiple seasonality, combinations of seasonal period lenghts - in time
 #' lags to be tested for. No seasonality should be represented by \code{NULL}.
-#' @param window rolling window for time series cross validation, in weeks.
 #' @return Returns a value specifying the length in time lags of the seasonal
 #' period. In the case of multiple seasonality, it returns a vector. In the case
 #' of no seasonality, it returns \code{NULL}.
 #' @export
-test_seasonality = function(data, seasons, window = 2) {
+test_seasonality = function(data, seasons) {
 
-  # Function to find the error of one of the provided (set of) seasonal periods
-  error_seasons = function(data, seasons, window) {
+  # Define the last timestamp of the model building period
+  # This is three weeks after the start of the data
+  last_timestamp = (data[1, 'time']) + ((60 * 60 * 24 * 7 * 3))
 
-    # Retrieve the last timestamp of the complete data frame
-    last_timestamp = data[nrow(data), 'time']
+  # Split the data in a model building period and a forecast period
+  model_period = data[data$time < last_timestamp, ]
+  forecast_period = data[data$time >= last_timestamp, ]
 
-    # Define the 'last timestamp' of the first period for model building
-    # This is always one month after the start of the data
-    t = (data[1, 'time']) + ((60 * 60 * 24 * 7 * 4))
+  # Function to calculate error of forecast with one of the given seasonality options
+  error_single_season = function(season) {
 
-    # List the 'last timestamps' of all periods for model building
-    period_ends = c()
+    # Build model
+    model = dockless::build_single_model(
+      data = model_period,
+      auto_seasonality = FALSE,
+      seasons = season
+    )
 
-    while(t < (last_timestamp - (60 * 60 * 24 * 7 * window))) {
-      period_ends[length(period_ends) + 1] = t
-      t = t + (60 * 60 * 24 * 7 * window)
-    }
+    # Forecast
+    forecast = dockless::forecast_lastweek(
+      data = forecast_period,
+      model = model,
+      weeks_of_data = 2
+    )
 
-    # Build models and forecast (window) weeks ahead for each period
-    f = function(x) {
-      # Select model data
-      model_period = data[data$time <= x,]
-
-      # Build model
-      model = build_single_model(
-        data = model_period,
-        auto_seasonality = FALSE,
-        seasons = seasons
-      )
-
-      # Select forecast period
-      forecast_period = data[data$time <= x + (60 * 60 * 24 * 7),]
-
-      # Forecast
-      forecast = forecast_lastweek(
-        data = forecast_period,
-        model = model,
-        weeks_of_data = 8
-      )
-
-      # Return RMSE of forecast
-      error(do.call(rbind, forecast), type = 'RMSE')
-
-    }
-
-    errors = sapply(period_ends, f)
-
-    mean(errors, na.rm = TRUE)
+    # Return RMSE of forecast
+    dockless::error(forecast, type = 'RMSE', return = 'average')
 
   }
 
   # Calculate the forecast errors for all given (sets of) seasonal periods
   f = function(x) {
-    error_seasons(
-      data = data,
-      seasons = x,
-      window = window
+    error_single_season(
+      season = x
     )
   }
 
@@ -183,10 +162,6 @@ test_seasonality = function(data, seasons, window = 2) {
 #' model will be fitted on the seasonally adjusted data.
 #'
 #' @param data object of class \code{dockless_dfc}.
-#' @param weeks_of_data how many weeks of historical data to use for model building.
-#' @param last_day character specifying the last day of the model building period.
-#' Should be in the format 'YYYY-mm-dd'. If set to NULL, the last day of the data
-#' is used.
 #' @param auto_seasonality logical. If \code{TRUE}, the seasonal period of each
 #' time series will be automatically determined with time series cross-validation.
 #' @param seasons if \code{auto_seasonality} is set to \code{TRUE}: a list of
@@ -199,63 +174,39 @@ test_seasonality = function(data, seasons, window = 2) {
 #' of the time series. No seasonality should be represented by \code{NULL}. The
 #' list should be of the same length as the number of time series in the
 #' \code{dockless_dfc} object.
-#' @param window rolling window for time series cross validation, in weeks.
-#' Ignored when \code{auto_seasonality} is set to \code{FALSE}.
 #' @return Returns a list of models, one for each \code{dockless_df} time series.
 #' Each model is an object of class \code{ARIMA} for non-seasonal data and an
 #' object of class \code{stlm} for seasonal data. Both classes come from the
 #' \code{forecast} package.
 #' @export
-build_models = function(data, weeks_of_data = 12, last_day = NULL,
-                        auto_seasonality = TRUE,
-                        seasons = list(NULL, 96, 672, c(96, 672)),
-                        window = 2) {
-
-  # Define the last timestamp of the data that needs to be used to build the model
-  if (is.null(last_day)) {
-    last_timestamp = (data[[1]])[nrow(data[[1]]), 'time']
-  } else {
-    last_timestamp = as.POSIXct(
-      paste(as.character(last_day), '23:45:00'),
-      format = '%Y-%m-%d %H:%M:%S',
-      tz = 'America/Los_Angeles'
-    )
-  }
-
-  # Define the first timestamp of the data that needs to be used to build the model
-  first_timestamp = last_timestamp - (60 * 60 * 24 * 7 * weeks_of_data)
-
-  # Select rows from the data that lie within the model building period
-  f = function(x) {
-    x[x$time > first_timestamp & x$time <= last_timestamp,]
-  }
-
-  selected_data = lapply(data, f)
+build_models = function(data, auto_seasonality = TRUE,
+                        seasons = list(NULL, 96, 672, c(96, 672))) {
 
   # Run the build single model function for all the given data frames
   # Test automatically for the best seasonality
   if (auto_seasonality) {
+
     f = function(x) {
       build_single_model(
         data = x,
         auto_seasonality = TRUE,
-        seasons = seasons,
-        window = window
+        seasons = seasons
       )
     }
 
-    all_models = lapply(selected_data, f)
+    all_models = lapply(data, f)
+
   } else {
+
     g = function(x, y) {
       build_single_model(
         data = x,
         auto_seasonality = FALSE,
-        seasons = y,
-        window = window
+        seasons = y
       )
     }
 
-    all_models = mapply(selected_data, seasons, g)
+    all_models = mapply(data, seasons, g)
   }
 
   return(all_models)
