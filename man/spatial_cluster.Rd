@@ -4,8 +4,7 @@
 \alias{spatial_cluster}
 \title{Spatially constrained hierarchical clustering of a \code{dockless_dfc} object}
 \usage{
-spatial_cluster(data, grid, K, omega = seq(0, 1, 0.1),
-  return = "polygons")
+spatial_cluster(data, grid, K, omega = seq(0, 1, 0.1))
 }
 \arguments{
 \item{data}{object of class \code{dockless_dfc}.}
@@ -19,15 +18,12 @@ clusters, should be tested.}
 
 \item{omega}{vector of values specifying which values of alpha, the mixing
 parameter, should be tested.}
-
-\item{return}{one of 'vector' or 'polygons'.}
 }
 \value{
-If \code{return} is set to 'vector', the output is a numeric vector of cluster
+Returns a list of 2 with one element being a numeric vector of cluster
 indices that specifies for each of the given \code{dockless_df} objects to which
-cluster it belongs. If \code{return} is set to 'polygons', the output contains the
-geographical outines of each cluster, bundled in an object of class \code{sf} with
-polygon geometry.
+cluster it belongs, and the second element being the geographical outines of each
+cluster, bundled in an object of class \code{sf} with polygon geometry.
 }
 \description{
 Clusters the \code{dockless_df} objects in a \code{dockless_dfc} with
