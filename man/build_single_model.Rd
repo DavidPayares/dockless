@@ -5,7 +5,7 @@
 \title{Forecasting model for \code{dockless_df} object}
 \usage{
 build_single_model(data, auto_seasonality = TRUE, seasons = list(NULL,
-  96, 672, c(96, 672)), window = 2)
+  96, 672, c(96, 672)))
 }
 \arguments{
 \item{data}{object of class \code{dockless_df}.}
@@ -21,9 +21,6 @@ the time series cross-validation. No seasonality should be represented by
 period length - or, in the case of multiple seasonality, combination of
 seasonal period lenghts - in time lags. No seasonality should be represented
 by \code{NULL}.}
-
-\item{window}{rolling window for time series cross validation, in weeks.
-Ignored when \code{auto_seasonality} is set to \code{FALSE}.}
 }
 \value{
 Returns an object of class \code{ARIMA} for non-seasonal data and an

@@ -4,7 +4,7 @@
 \alias{test_seasonality}
 \title{Automatic seasonality testing}
 \usage{
-test_seasonality(data, seasons, window = 2)
+test_seasonality(data, seasons)
 }
 \arguments{
 \item{data}{object of class \code{dockless_df}.}
@@ -12,8 +12,6 @@ test_seasonality(data, seasons, window = 2)
 \item{seasons}{a list of different seasonal period lengths - or, in the case
 of multiple seasonality, combinations of seasonal period lenghts - in time
 lags to be tested for. No seasonality should be represented by \code{NULL}.}
-
-\item{window}{rolling window for time series cross validation, in weeks.}
 }
 \value{
 Returns a value specifying the length in time lags of the seasonal

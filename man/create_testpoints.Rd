@@ -2,34 +2,27 @@
 % Please edit documentation in R/forecast_loop.R
 \name{create_testpoints}
 \alias{create_testpoints}
-\title{Create a sample of test points}
+\title{Create test points}
 \usage{
-create_testpoints(intensity_data, area, clusters, first_day, n_weeks = 2,
-  n_sample = 500)
+create_testpoints(data, area, clusters, n)
 }
 \arguments{
-\item{intensity_data}{object of class \code{sf} with point geometry, containing the
-locations and times of all pick-ups in the bike sharing system.}
+\item{data}{the usage data of the test period as object of class \code{sf}
+with point geometry.}
 
-\item{area}{object of class \code{sf}, with polygon geometry, representing the
-service area of the bike sharing system.}
+\item{area}{the system area of the bike sharing system as object of class
+\code{sf}, with polygon geometry.}
 
-\item{clusters}{objects of class \code{sf}, with polygon geometry,
-representing the geographical outline of the clusters.}
+\item{clusters}{the geographical outlines of the clusters as object of class
+\code{sf}, with polygon geometry.}
 
-\item{first_day}{character specifying the first day of the test set period.
-Should be in the format 'YYYY-mm-dd'.}
-
-\item{n_weeks}{the length in weeks of the test set period.}
-
-\item{n_sample}{the size of the sample for each week.}
+\item{n}{the desired number of test points.}
 }
 \value{
-Returns an object of class \code{sf}, with point geometry
+Returns an object of class \code{sf}, with point geometry.
 }
 \description{
-A test set is created inside the function by sampling 'location, time of the day,
-day of the week'-combinations from a dataframe with all the pick ups in the
-historical data from the bike sharing system. The days of the week from those
-combinations are translated into the same days of the week in the test set period.
+Creates an object of class \code{sf} containing the geographical locations
+and timestamps of the test points. All location-timestamp combinations are
+sample from the usage data of the test period.
 }

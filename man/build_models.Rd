@@ -4,18 +4,11 @@
 \alias{build_models}
 \title{Forecasting models for \code{dockless_dfc} object}
 \usage{
-build_models(data, weeks_of_data = 12, last_day = NULL,
-  auto_seasonality = TRUE, seasons = list(NULL, 96, 672, c(96, 672)),
-  window = 2)
+build_models(data, auto_seasonality = TRUE, seasons = list(NULL, 96,
+  672, c(96, 672)))
 }
 \arguments{
 \item{data}{object of class \code{dockless_dfc}.}
-
-\item{weeks_of_data}{how many weeks of historical data to use for model building.}
-
-\item{last_day}{character specifying the last day of the model building period.
-Should be in the format 'YYYY-mm-dd'. If set to NULL, the last day of the data
-is used.}
 
 \item{auto_seasonality}{logical. If \code{TRUE}, the seasonal period of each
 time series will be automatically determined with time series cross-validation.}
@@ -30,9 +23,6 @@ combinations of seasonal period lenghts - in time lags to be used for each
 of the time series. No seasonality should be represented by \code{NULL}. The
 list should be of the same length as the number of time series in the
 \code{dockless_dfc} object.}
-
-\item{window}{rolling window for time series cross validation, in weeks.
-Ignored when \code{auto_seasonality} is set to \code{FALSE}.}
 }
 \value{
 Returns a list of models, one for each \code{dockless_df} time series.
