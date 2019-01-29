@@ -342,7 +342,7 @@ query_usage = function(bikes,
     # Create a data.frame containing all timestamps t+1
     data_t1 = data[-1,]
 
-    # If data_t has zero rows, return the empty data_t
+    # If data_t has zero rows, return NULL
     if (nrow(data_t) == 0) {
       return(NULL)
     }
@@ -364,8 +364,13 @@ query_usage = function(bikes,
     # Only keep the pick-ups
     pickups = data_t[data_t$true_pickup, c(1:4)]
 
+    # If there are no pick-ups, return NULL
+    if (nrow(pickups) == 0) {
+      return(NULL)
+    }
+
     # Return as sf object
-    sf::st_as_sf(pickups)
+    sf::st_as_sf(pickups, crs = 4326)
 
   }
 
