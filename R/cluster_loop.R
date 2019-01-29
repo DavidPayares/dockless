@@ -11,7 +11,7 @@
 #' If \code{type} is set to \code{centers} it returns an object of
 #' class \code{sf} containing the grid cell centroids as points.
 #' @export
-make_grid = function(area, type, ...) {
+create_grid = function(area, type, ...) {
 
   # Project the area
   area_projected = dockless::project_sf(area)
