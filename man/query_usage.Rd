@@ -9,9 +9,8 @@ query_usage(bikes, from = as.POSIXct("2018-09-10 16:30:00", format =
   to = Sys.time(), database_user, database_password)
 }
 \arguments{
-\item{bikes}{objects of class \code{data.frame},  or similar, that contains
-the ID's of the bikes of interest. Should be obtained with the
-\code{dockless::query_bikes} function.}
+\item{bikes}{a vector that contains the ID's of the bikes of interest.
+Should be obtained with the \code{dockless::query_bikes} function.}
 
 \item{from}{timestamp of class \code{POSIXct} defining from which timestamp
 on data should be queried. Default is set to the first timestamp
