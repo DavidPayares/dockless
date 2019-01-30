@@ -1,9 +1,9 @@
-#' Square grid over service area
+#' Square grid over system area
 #'
 #' Creates a square grid with given cell size over the service area
 #' of the dockless bike sharing system.
 #'
-#' @param area object of class \code{sf} representing the service area.
+#' @param area object of class \code{sf} representing the system area.
 #' @param ... further arguments passed to \code{st_make_grid}.
 #' @return If \code{type} is set to \code{polygons}, it returns an object
 #' of class \code{sf} containing the grid cells as square polygons.
@@ -66,6 +66,7 @@ usage_intensity = function(usage, grid) {
 #' @param grid grid cells as object of class \code{sf} with polygon geometry, in which
 #' each cell refers to the spatial location of each \code{dockless_df} object in
 #' the \code{dockless_dfc}.
+#' @param area object of class \code{sf} representing the system area.
 #' @param K vector of integers specifying which values of k, the number of
 #' clusters, should be tested.
 #' @param omega vector of values specifying which values of alpha, the mixing
@@ -180,6 +181,13 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
   # Retrieve cluster indices
   cluster_indices_updated = grid_updated$cluster
 
+  # Clip cluster outlines by system area
+  cluster_outlines_updated = sf::st_intersection(
+    dockless::project_sf(cluster_outlines),
+    dockless::project_sf(area)
+  )
+  grid_updated = sf::st_transform(grid_updated, crs = 4326)
+
   # Return list of indices and outlines
   list(indices = cluster_indices_updated, outlines = cluster_outlines)
 
@@ -218,6 +226,11 @@ create_modelpoints = function(centroids) {
     sf::st_sf(geometry)
   }
 
-  do.call('rbind', lapply(centroids_per_cluster, f))
+  modelpoints = do.call('rbind', lapply(centroids_per_cluster, f))
+
+  # Add cluster information
+  modelpoints$cluster = as.factor(seq(1, nrow(modelpoints), 1))
+
+  return(modelpoints)
 
 }
