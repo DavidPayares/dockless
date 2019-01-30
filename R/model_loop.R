@@ -113,9 +113,8 @@ test_seasonality = function(data, seasons) {
   # This is three weeks after the start of the data
   last_timestamp = (data[1, 'time']) + ((60 * 60 * 24 * 7 * 3))
 
-  # Split the data in a model building period and a forecast period
+  # Define the data used for model building
   model_period = data[data$time < last_timestamp, ]
-  forecast_period = data[data$time >= last_timestamp, ]
 
   # Function to calculate error of forecast with one of the given seasonality options
   error_single_season = function(season) {
@@ -129,13 +128,13 @@ test_seasonality = function(data, seasons) {
 
     # Forecast
     forecast = dockless::forecast_lastweek(
-      data = forecast_period,
+      data = data,
       method = 'DBAFS',
       model = model
     )
 
     # Return RMSE of forecast
-    dockless::error(forecast, type = 'RMSE', return = 'average')
+    dockless::error(forecast, type = 'RMSE', return = 'all')
 
   }
 
