@@ -4,7 +4,7 @@
 \alias{spatial_cluster}
 \title{Spatially constrained hierarchical clustering of a \code{dockless_dfc} object}
 \usage{
-spatial_cluster(data, grid, K, omega = seq(0, 1, 0.1))
+spatial_cluster(data, grid, area, K, omega = seq(0, 1, 0.1))
 }
 \arguments{
 \item{data}{object of class \code{dockless_dfc}.}
@@ -13,13 +13,13 @@ spatial_cluster(data, grid, K, omega = seq(0, 1, 0.1))
 each cell refers to the spatial location of each \code{dockless_df} object in
 the \code{dockless_dfc}.}
 
+\item{area}{object of class \code{sf} representing the system area.}
+
 \item{K}{vector of integers specifying which values of k, the number of
 clusters, should be tested.}
 
 \item{omega}{vector of values specifying which values of alpha, the mixing
 parameter, should be tested.}
-
-\item{area}{object of class \code{sf} representing the system area.}
 }
 \value{
 Returns a list of 2 with one element being a numeric vector of cluster
