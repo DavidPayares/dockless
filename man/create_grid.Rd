@@ -2,12 +2,12 @@
 % Please edit documentation in R/cluster_loop.R
 \name{create_grid}
 \alias{create_grid}
-\title{Square grid over service area}
+\title{Square grid over system area}
 \usage{
 create_grid(area, ...)
 }
 \arguments{
-\item{area}{object of class \code{sf} representing the service area.}
+\item{area}{object of class \code{sf} representing the system area.}
 
 \item{...}{further arguments passed to \code{st_make_grid}.}
 }

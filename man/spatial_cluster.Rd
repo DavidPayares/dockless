@@ -18,6 +18,8 @@ clusters, should be tested.}
 
 \item{omega}{vector of values specifying which values of alpha, the mixing
 parameter, should be tested.}
+
+\item{area}{object of class \code{sf} representing the system area.}
 }
 \value{
 Returns a list of 2 with one element being a numeric vector of cluster
