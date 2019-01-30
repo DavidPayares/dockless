@@ -178,19 +178,20 @@ forecast_lastweek = function(data, method, model = NULL) {
   # Days in a week
   days = rev(seq(1, 7, 1))
 
-  # Define days of data to use for each forecast
-  if(method == 'EFS') {
-    days_of_data = 28
-  } else {
-    days_of_data = 14
-  }
-
   # Apply the forecast_lastday function to each of the days
   forecast_single_day = function(x) {
 
-    forecast_data = data[(nrow(data) - (x + days_of_data) * 96 + 1):(nrow(data) - x * 96), ]
+    # Data used for forecasting
+    if (method == 'EFS') {
+      forecast_data = data[(nrow(data) - (x + 28) * 96 + 1):(nrow(data) - x * 96), ]
+    } else {
+      forecast_data = data[(nrow(data) - (x + 14) * 96):(nrow(data) - x * 96), ]
+    }
+
+    # Data used to evaluate forecasts
     evaluate_data = data[(nrow(data) - x * 96 + 1):(nrow(data) - (x - 1) * 96), ]
 
+    # Forecast
     dockless::forecast_single(
       forecast_data = forecast_data,
       evaluate_data = evaluate_data,
