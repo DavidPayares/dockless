@@ -76,7 +76,7 @@ usage_intensity = function(usage, grid) {
 #' cluster it belongs, and the second element being the geographical outines of each
 #' cluster, bundled in an object of class \code{sf} with polygon geometry.
 #' @export
-spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
+spatial_cluster = function(data, grid, area, K, omega = seq(0, 1, 0.1)) {
 
   # Create a dissimilarity matrix from the data
   data_dis = dockless::dissimilarity_data(data)
@@ -176,7 +176,11 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
     dockless::project_sf(cluster_outlines),
     join = sf::st_within
   )
-  grid_updated = sf::st_transform(grid_updated, crs = 4326)
+
+  grid_updated = sf::st_transform(
+    grid_updated,
+    crs = 4326
+  )
 
   # Retrieve cluster indices
   cluster_indices_updated = grid_updated$cluster
@@ -186,10 +190,17 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
     dockless::project_sf(cluster_outlines),
     dockless::project_sf(area)
   )
-  grid_updated = sf::st_transform(grid_updated, crs = 4326)
+
+  cluster_outlines_updated = sf::st_transform(
+    cluster_outlines_updated,
+    crs = 4326
+  )
 
   # Return list of indices and outlines
-  list(indices = cluster_indices_updated, outlines = cluster_outlines)
+  list(
+    indices = cluster_indices_updated,
+    outlines = cluster_outlines_updated
+  )
 
 }
 
