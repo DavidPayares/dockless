@@ -173,7 +173,7 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
   grid_updated = sf::st_join(
     dockless::project_sf(grid),
     dockless::project_sf(cluster_outlines),
-    join = sf::st_covers
+    join = sf::st_within
   )
   grid_updated = sf::st_transform(grid_updated, crs = 4326)
 
