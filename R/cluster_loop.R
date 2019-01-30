@@ -172,9 +172,10 @@ spatial_cluster = function(data, grid, K, omega = seq(0, 1, 0.1)) {
   grid$cluster = NULL
   grid_updated = sf::st_join(
     dockless::project_sf(grid),
-    dockless::project_sf(cluster_outlines)
+    dockless::project_sf(cluster_outlines),
+    join = sf::st_covers
   )
-  grid_update = sf::st_transform(crs = 4326)
+  grid_updated = sf::st_transform(grid_updated, crs = 4326)
 
   # Retrieve cluster indices
   cluster_indices_updated = grid_updated$cluster
