@@ -308,7 +308,7 @@ forecast_multiple = function(data, method, perspective,
     # Run the forecast_one_testpoint function for all testpoints
     f = function(x, y) {
       forecast_one_testpoint(
-        points = points[x, ],
+        point = points[x, ],
         data = y
       )
     }
@@ -364,7 +364,7 @@ forecast_multiple = function(data, method, perspective,
     # Run the forecast_one_centroid function for all grid cell centroids
     f = function(x, y) {
       forecast_one_centroid(
-        points = points[x, ],
+        point = points[x, ],
         data = y
       )
     }
