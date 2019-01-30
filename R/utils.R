@@ -11,7 +11,7 @@
 dockless_colors = function(n = 10, categorical = FALSE) {
 
   if (categorical) {
-    c('orange', 'deepskyblue', 'magenta', 'lawngreen' )
+    c('firebrick1', 'orange', 'deepskyblue', 'magenta', 'lawngreen')
   } else {
     color_function = grDevices::colorRampPalette(
       c('#fbd38c', '#fac56a', '#f9b847', '#f9ab24', '#f39c06', '#d08605',
