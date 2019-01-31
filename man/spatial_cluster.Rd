@@ -11,7 +11,8 @@ spatial_cluster(data, grid, area, K, omega = seq(0, 1, 0.1))
 
 \item{grid}{grid cells as object of class \code{sf} with polygon geometry, in which
 each cell refers to the spatial location of each \code{dockless_df} object in
-the \code{dockless_dfc}.}
+the \code{dockless_dfc}. Must contain a column named \code{intensity}, which provides
+the number of pick-ups per grid cill.}
 
 \item{area}{object of class \code{sf} representing the system area.}
 
