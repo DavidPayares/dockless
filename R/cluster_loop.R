@@ -65,7 +65,8 @@ usage_intensity = function(usage, grid) {
 #' @param data object of class \code{dockless_dfc}.
 #' @param grid grid cells as object of class \code{sf} with polygon geometry, in which
 #' each cell refers to the spatial location of each \code{dockless_df} object in
-#' the \code{dockless_dfc}.
+#' the \code{dockless_dfc}. Must contain a column named \code{intensity}, which provides
+#' the number of pick-ups per grid cill.
 #' @param area object of class \code{sf} representing the system area.
 #' @param K vector of integers specifying which values of k, the number of
 #' clusters, should be tested.
@@ -181,6 +182,76 @@ spatial_cluster = function(data, grid, area, K, omega = seq(0, 1, 0.1)) {
     grid_updated,
     crs = 4326
   )
+
+  # Calculate number of pick-ups per cluster
+  pickups_per_cluster = stats::aggregate(
+    grid_updated$intensity,
+    by = list(grid_updated$cluster),
+    FUN = sum
+  )
+
+  if (!all(pickups_per_cluster$x >= 56)) {
+
+    # Identify the cluster with too low usage intensity
+    small_cluster = which(pickups_per_cluster$x < 56)
+
+    # Calculate the centroids of all clusters
+    centroids = lapply(
+      cluster_outlines$geometry,
+      function(x) sf::st_centroid(x)
+    )
+
+    # For the small_cluster, find cluster with nearest centroid
+    distances = sapply(
+      centroids,
+      function(x) sf::st_distance(x, centroids[[small_cluster]])
+    )
+
+    nearest_cluster = which.min(distances[distances > 0])
+
+    # Replace cluster indices of small_cluster with cluster indices...
+    # ... of nearest cluster
+    grid_updated[grid_updated$cluster == small_cluster,]$cluster =
+      nearest_cluster
+
+    # Split by cluster
+    cells_per_cluster = split(
+      x = grid_updated,
+      f = grid_updated$cluster
+    )
+
+    # Dissolve grid cells per cluster
+    cells_dissolved = lapply(
+      cells_per_cluster,
+      function(x) sf::st_union(x)
+    )
+
+    cluster_outlines = do.call('rbind', lapply(cells_dissolved, f))
+
+    # Sort based on Y coordinate of centroid
+    cluster_centroids = sf::st_coordinates(
+      sf::st_centroid(dockless::project_sf(cluster_outlines))
+    )
+
+    cluster_outlines = cluster_outlines[order(cluster_centroids[,"Y"]), ]
+
+    # Add cluster index
+    cluster_outlines$cluster = as.factor(c(1:nrow(cluster_outlines)))
+
+    # Update cluster information of grid cells
+    grid_updated$cluster = NULL
+    grid_updated = sf::st_join(
+      dockless::project_sf(grid_updated),
+      dockless::project_sf(cluster_outlines),
+      join = sf::st_within
+    )
+
+    grid_updated = sf::st_transform(
+      grid_updated,
+      crs = 4326
+    )
+
+  }
 
   # Retrieve cluster indices
   cluster_indices_updated = grid_updated$cluster
