@@ -55,7 +55,7 @@ error.dockless_fc = function(x, type, return = 'all') {
 error.dockless_fcc = function(x, type, return = 'average') {
 
   # Calculate error per dockless_fc
-  errors = sapply(x, function(x) error(x, type = type))
+  errors = sapply(x, function(x) dockless::error(x, type = type))
 
   if (return == 'average') {
 
@@ -149,11 +149,11 @@ error_hourofday.dockless_fc = function(x, type) {
 #' @export
 error_hourofday.dockless_fcc = function(x, type) {
 
-  # Calculate error per hour of day for each dockless_fc
-  errors = sapply(x, function(x) error_hourofday(x, type = type))
+  # Bind dockless_fc's together
+  combined = do.call('rbind', x)
 
-  # Average per hour of day
-  rowMeans(errors, na.rm = TRUE)
+  # Calculate error per hour of day for the combined data frame
+  dockless::error_hourofday(combined, type = type)
 
 }
 
@@ -204,7 +204,7 @@ error_lag.dockless_fc = function(x, type) {
 error_lag.dockless_fcc = function(x, type) {
 
   # Calculate error per forecast lag for each dockless_fc
-  errors = sapply(x, function(x) error_lag(x, type = type))
+  errors = sapply(x, function(x) dockless::error_lag(x, type = type))
 
   # Average per hour of day
   rowMeans(errors, na.rm = TRUE)
@@ -227,7 +227,7 @@ error_lag.dockless_fcc = function(x, type) {
 error_cluster = function(x, clusters, type, return) {
 
   # Calculate forecast error per dockless_fc
-  errors_vec = error(x, type = type, return = 'all')
+  errors_vec = dockless::error(x, type = type, return = 'all')
 
   # Add cluster information
   errors_df = data.frame(
@@ -293,14 +293,14 @@ evaluate = function(x, clusters, type) {
 
   # Calculate errors for the total area
   errors_area = mapply(
-    function(x, y) error(x, type = type, return = y),
+    function(x, y) dockless::error(x, type = type, return = y),
     list(x, x, x),
     metrics
   )
 
   # Calculate errors per cluster
   errors_cluster = mapply(
-    function(x, y) error_cluster(x, clusters = clusters, type = type, return = y),
+    function(x, y) dockless::error_cluster(x, clusters = clusters, type = type, return = y),
     list(x, x, x),
     metrics
   )
