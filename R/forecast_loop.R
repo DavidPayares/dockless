@@ -230,7 +230,7 @@ forecast_lastweek = function(data, method, model = NULL) {
 #' @return Returns an object of class \code{dockless_fcc}, which is a collection of
 #' \code{dockless_fc} data frames.
 #' @export
-forecast_multiple = function(data, method, perspective,
+forecast_multiple = function(data, method, perspective = 'user',
                     points, models = NULL) {
 
   if (perspective == 'user') {
@@ -254,7 +254,7 @@ forecast_multiple = function(data, method, perspective,
       # Select the needed data
       # Make distinction between the data to be used for the forecasting, ...
       # ... and the data to be used to evaluate the forecasts
-      forecast_data = data[data$time > from_time & data$time <= time, ]
+      forecast_data = data[data$time >= from_time & data$time <= time, ]
       evaluate_data = data[data$time > time & data$time <= to_time, ]
 
       # Forecast the forecast_data 96 time lags ahead with the given method
