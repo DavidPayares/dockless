@@ -109,32 +109,56 @@ build_single_model = function(data, auto_seasonality = TRUE,
 #' @export
 test_seasonality = function(data, seasons) {
 
-  # Define the last timestamp of the model building period
-  # This is three weeks after the start of the data
-  last_timestamp = (data[1, 'time']) + ((60 * 60 * 24 * 7 * 3))
+  # Retrieve the last timestamp of the complete data frame
+  last_timestamp = data[nrow(data), 'time']
 
-  # Define the data used for model building
-  model_period = data[data$time < last_timestamp, ]
+  # Define the last timestamp of the first period for model building
+  # This is always two weeks after the start of the data
+  t = (data[1, 'time']) + ((60 * 60 * 24 * 7 * 2))
+
+  # List the last timestamps of all model building periods
+  period_ends = c()
+
+  while(t < (last_timestamp - (60 * 60 * 24 * 7))) {
+
+    period_ends[length(period_ends) + 1] = t
+    t = t + (60 * 60 * 24 * 7)
+
+  }
 
   # Function to calculate error of forecast with one of the given seasonality options
   error_single_season = function(season) {
 
-    # Build model
-    model = dockless::build_single_model(
-      data = model_period,
-      auto_seasonality = FALSE,
-      seasons = season
-    )
+    # Build model and forecast 1 week ahead
+    f = function(x) {
+      # Select model data
+      model_period = data[data$time <= x,]
 
-    # Forecast
-    forecast = dockless::forecast_lastweek(
-      data = data,
-      method = 'DBAFS',
-      model = model
-    )
+      # Build model
+      model = dockless::build_single_model(
+        data = model_period,
+        auto_seasonality = FALSE,
+        seasons = season
+      )
 
-    # Return RMSE of forecast
-    dockless::error(forecast, type = 'RMSE', return = 'all')
+      # Select forecast data
+      forecast_period = data[data$time <= x + (60 * 60 * 24 * 7),]
+
+      # Forecast
+      forecast = dockless::forecast_lastweek(
+        data = forecast_period,
+        method = 'DBAFS',
+        model = model
+      )
+
+      # Return RMSE of forecast
+      dockless::error(forecast, type = 'RMSE', return = 'all')
+
+    }
+
+    errors = sapply(period_ends, f)
+
+    mean(errors, na.rm = TRUE)
 
   }
 
