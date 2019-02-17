@@ -214,11 +214,15 @@ spatial_cluster = function(data, grid, area, K, omega = seq(0, 1, 0.1)) {
     grid_updated[grid_updated$cluster == small_cluster,]$cluster =
       nearest_cluster
 
+    # Update cluster variable
+    grid_updated$cluster = factor(grid_updated$cluster)
+
     # Split by cluster
     cells_per_cluster = split(
       x = grid_updated,
       f = grid_updated$cluster
     )
+
 
     # Dissolve grid cells per cluster
     cells_dissolved = lapply(
