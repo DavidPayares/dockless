@@ -4,7 +4,8 @@
 \alias{forecast_multiple}
 \title{Forecast a \code{dockless_dfc} object}
 \usage{
-forecast_multiple(data, method, perspective, points, models = NULL)
+forecast_multiple(data, method, perspective = "user", points,
+  models = NULL)
 }
 \arguments{
 \item{data}{object of class \code{dockless_dfc}.}
