@@ -203,11 +203,32 @@ error_lag.dockless_fc = function(x, type) {
 #' @export
 error_lag.dockless_fcc = function(x, type) {
 
-  # Calculate error per forecast lag for each dockless_fc
-  errors = sapply(x, function(x) dockless::error_lag(x, type = type))
+  # Add lag information to each dockless_fc
+  f = function(x) {
+    x$lag = c(1:nrow(x))
+    return(x)
+  }
 
-  # Average per hour of day
-  rowMeans(errors, na.rm = TRUE)
+  x_updated = lapply(x, f)
+
+  # Bind dockless_fc's together
+  combined = do.call('rbind', x_updated)
+
+  # Convert error into squared error
+  combined$error = (combined$error)^2
+
+  # Aggregate by lag and calculate mse
+  agg = stats::aggregate(
+    combined$error,
+    by = list(combined$lag),
+    FUN = function(x) mean(x, na.rm = TRUE)
+  )
+
+  # Take square root
+  agg[, 2] = sqrt(agg[, 2])
+
+  # Return the errors as named vector
+  stats::setNames(agg[,2], nm = agg[,1])
 
 }
 
