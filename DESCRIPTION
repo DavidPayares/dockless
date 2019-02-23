@@ -8,6 +8,7 @@ Authors@R:
            email = "l_vand09@uni-muenster.de")
 Description: Functions for my master thesis in Geospatial Technologies.
 License: GPL-2
+Depends: R (>= 2.10)
 Encoding: UTF-8
 LazyData: true
 Imports: 
@@ -24,5 +25,9 @@ Imports:
     graphics
 Suggests: 
     ggplot2,
-    tsibblestats
+    ggspatial,
+    rosm,
+    ggsci,
+    tsibblestats,
+    tsfeatures
 RoxygenNote: 6.1.1
