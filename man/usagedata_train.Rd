@@ -4,7 +4,7 @@
 \name{usagedata_train}
 \alias{usagedata_train}
 \title{Usage data for the training period}
-\format{An object of class \code{sf} (inherits from \code{data.frame}) with 56587 rows and 4 columns.}
+\format{An object of class \code{sf} (inherits from \code{data.frame}) with 56504 rows and 4 columns.}
 \usage{
 usagedata_train
 }
