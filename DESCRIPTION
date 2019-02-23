@@ -29,5 +29,8 @@ Suggests:
     rosm,
     ggsci,
     tsibblestats,
-    tsfeatures
+    tsfeatures,
+    dplyr,
+    tidyr,
+    tibble
 RoxygenNote: 6.1.1
