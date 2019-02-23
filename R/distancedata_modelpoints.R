@@ -1,0 +1,13 @@
+#' Distance data for the model points
+#'
+#' The distance data for the model points, during the
+#' training period. Used for model building.
+#'
+#' @format An object of class dockless_dfc, containing 4 data frames of
+#' subclass dockless_df, with 2689 rows.
+#' \describe{
+#'   \item{bike_id}{unique identification number of the bike}
+#'   \item{time}{timestamp of the observation}
+#'   \item{distance}{distance to the neareast available bike, in meters}
+#' }
+"distancedata_modelpoints"
