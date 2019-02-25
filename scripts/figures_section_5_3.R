@@ -16,7 +16,7 @@ require(lubridate)
 
 ## -------------------- test points locations -----------------------
 
-testpoints_locations = ggplot() +
+ggplot() +
   ggspatial::annotation_map_tile(
     type = 'cartolight',
     zoom = 13
@@ -44,7 +44,7 @@ testpoints_rounded = testpoints %>%
   mutate(time = lubridate::round_date(time, 'hour'))
 
 # Plot
-testpoints_time = ggplot(
+ggplot(
   data = testpoints_rounded,
   mapping = aes(x = time)
 ) +
@@ -84,7 +84,7 @@ rmse_hourofday = data.frame(
 )
 
 # Plot
-hourofday = ggplot(
+ggplot(
   data = rmse_hourofday,
   mapping = aes(x = hour, y = rmse)
 ) +
@@ -130,7 +130,7 @@ rmse_lag = data.frame(
 )
 
 # Plot
-lag = ggplot(
+ggplot(
   data = rmse_lag,
   mapping = aes(x = lag, y = rmse)
 ) +
@@ -245,3 +245,5 @@ for (i in stripr) {
   forecastgrid$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill = colors[k]
   k = k + 1
 }
+
+grid::grid.draw(forecastgrid)

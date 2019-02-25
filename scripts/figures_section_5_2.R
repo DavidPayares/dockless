@@ -11,7 +11,7 @@ require(tibble)
 require(tidyr)
 require(sf)
 require(tsibble)
-require(tsibblestats)
+require(feats)
 require(lubridate)
 
 ## -------------------------- time plot -----------------------------
@@ -109,6 +109,8 @@ for (i in stripr) {
   k = k + 1
 }
 
+grid::grid.draw(timegrid)
+
 ## ------------------- residual time plot ---------------------------
 
 # Get the residuals from each model as a vector
@@ -161,12 +163,14 @@ for (i in stripr) {
   k = k + 1
 }
 
+grid::grid.draw(residual_timegrid)
+
 ## ------------------ residual autocorrelation ----------------------
 
 # Get the residuals from each model as a vector
 acfdata = newdata %>%
   tsibble::as_tsibble(key = id(model)) %>%
-  tsibblestats::ACF(value = residuals, lag.max = 672, na.action = na.pass)
+  feats::ACF(value = residuals, lag.max = 672, na.action = na.pass)
 
 # Plot
 residual_acfplot = ggplot(
@@ -225,6 +229,8 @@ for (i in stripr) {
   k = k + 1
 }
 
+grid::grid.draw(residual_acfgrid)
+
 ## -------------------- residual histograms -------------------------
 
 # Plot
@@ -271,3 +277,5 @@ for (i in stripr) {
   residual_histogrid$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill = colors[k]
   k = k + 1
 }
+
+grid::grid.draw(residual_histogrid)

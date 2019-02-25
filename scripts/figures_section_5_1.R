@@ -17,7 +17,7 @@ require(lubridate)
 
 ## ------------------------- grid map -------------------------------
 
-grid_map = ggplot() +
+ggplot() +
   ggspatial::annotation_map_tile(
     type = 'cartolight',
     zoom = 13
@@ -46,7 +46,7 @@ grid_map = ggplot() +
 
 ## ------------------------ pick-ups map ----------------------------
 
-pickups_map = ggplot() +
+ggplot() +
   ggspatial::annotation_map_tile(
     type = 'cartolight',
     zoom = 13
@@ -88,7 +88,7 @@ usagedata_train$day = lubridate::wday(
 usagedata_dayofweek = as.data.frame(table(usagedata_train$day)/4)
 
 # Plot
-usage_dayofweek = ggplot(
+ggplot(
   data = usagedata_dayofweek,
   mapping = aes(x = Var1, y = Freq)
 ) +
@@ -111,7 +111,7 @@ usagedata_train$hour = lubridate::hour(usagedata_train$time)
 usagedata_hourofday = as.data.frame(table(usagedata_train$hour)/28)
 
 # Plot
-usage_hourofday = ggplot(
+ggplot(
   data = usagedata_hourofday,
   mapping = aes(x = Var1, y = Freq)
 ) +
@@ -129,7 +129,7 @@ usage_hourofday = ggplot(
 
 ## ------------------------- clusters map ---------------------------
 
-clusters_map = ggplot() +
+ggplot() +
   ggspatial::annotation_map_tile(
     type = 'cartolight',
     zoom = 13
@@ -155,7 +155,7 @@ clusters_map = ggplot() +
 
 ## ---------------------- model points map --------------------------
 
-modelpoints_map = ggplot() +
+ggplot() +
   ggspatial::annotation_map_tile(
     type = 'cartolight',
     zoom = 13
@@ -263,3 +263,5 @@ for (i in stripr) {
   clustergrid$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill = colors[k]
   k = k + 1
 }
+
+grid::grid.draw(clustergrid)
