@@ -28,7 +28,7 @@ Suggests:
     ggspatial,
     rosm,
     ggsci,
-    tsibblestats,
+    feasts,
     tsfeatures,
     dplyr,
     tidyr,
